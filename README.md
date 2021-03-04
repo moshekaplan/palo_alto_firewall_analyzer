@@ -1,5 +1,7 @@
 # Palo Alto Firewall Analyzer
 
+![Build](github.com/moshekaplan/palo_alto_firewall_analyzer/workflows/build/badge.svg)
+
 Scripts for reviewing and suggesting fixes for Palo Alto Firewall configurations
 
 This repository contains the following two scripts:
