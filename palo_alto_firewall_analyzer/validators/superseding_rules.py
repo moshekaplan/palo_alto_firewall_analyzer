@@ -1,4 +1,4 @@
-from palo_alto_firewall_validator.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
 
 def get_all_rules_for_dg(device_group, device_group_hierarchy_parent, devicegroup_objects):
