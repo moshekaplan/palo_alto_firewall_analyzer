@@ -34,7 +34,7 @@ class TestSupersedingRules(unittest.TestCase):
         )
         return profilepackage
 
-    def test_with_mandated_profile(self, get_firewall_zone):
+    def test_with_mandated_profile(self):
         test_xml = """\
         <response status="success"><result><config>
           <devices><entry><device-group><entry name="test_dg">
