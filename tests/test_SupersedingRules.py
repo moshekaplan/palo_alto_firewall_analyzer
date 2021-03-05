@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import collections
 import unittest
-from unittest.mock import patch
 
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
@@ -35,7 +34,6 @@ class TestSupersedingRules(unittest.TestCase):
         )
         return profilepackage
 
-    @patch('palo_alto_firewall_validator.validators.zone_based_checks.get_firewall_zone')
     def test_with_mandated_profile(self, get_firewall_zone):
         test_xml = """\
         <response status="success"><result><config>
