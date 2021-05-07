@@ -174,7 +174,7 @@ def find_extra_zones(profilepackage):
                         elif member_name in addresses:
                             all_contained_address_names = [member_name]
                         else:
-                            raise Exception("Unable to resolve a member name. This should be impossible! Please report the bug")
+                            raise Exception("Unable to resolve member '%s'. This should be impossible! Please report the bug" % member_name)
 
                         for address_name in all_contained_address_names:
                             # Only look up IPs if there is a single entry in the Address Object.
