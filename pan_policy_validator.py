@@ -80,12 +80,12 @@ Retrieves PAN FW policy and checks it for various issues."""
     parser.add_argument("--config", help="Config file to read", default="PAN_CONFIG.cfg")
     parser.add_argument("--profile", help="Config profile to run through validator (defaults to first config entry)")
     parser.add_argument("--api", help="File with API Key", default=DEFAULT_API_KEYFILE)
-    parser.add_argument("--debug", help="Write all debug output to debug.log", action='store_true')
+    parser.add_argument("--debug", help="Write all debug output to pan_validator_debug.log", action='store_true')
     parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)
     parsed_args = parser.parse_args()
 
     if parsed_args.debug:
-        pan_api.set_debug(True, 'debug.log')
+        pan_api.set_debug(True, 'pan_validator_debug.log')
 
     validator_config = configparser.ConfigParser()
     validator_config.read(parsed_args.config)
