@@ -4,6 +4,7 @@ import collections
 import xml.etree.ElementTree
 
 import requests
+import urllib
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -210,6 +211,20 @@ def get_active_firewalls(panorama, api_key):
             active_devices.append(hostname)
     return sorted(active_devices)
 
+@functools.lru_cache(maxsize=None)
+def get_url_categories(firewall, api_key, url):
+    params = {
+        'type': 'op',
+        'cmd': "<test><url>" + urllib.parse.quote(url) + "</url></test>",
+    }
+    response = pan_api(firewall, method="get", path="/api", params=params, api_key=api_key)
+
+    categories = []
+    root = xml.etree.ElementTree.fromstring(response.text)
+    basedb_response, clouddb_response = root.findall('./result')[0].text.strip().split('\n')
+
+    _, *categories = clouddb_response.split(' (')[0].split(' ')
+    return categories
 
 ###############################################################################
 # REST API functions
