@@ -4,10 +4,9 @@
 
 Scripts for reviewing and suggesting fixes for Palo Alto Firewall configurations
 
-This repository contains the following two scripts:
+This repository contains the following main script:
 
 * `pan_policy_validator.py` - Detects Palo Alto Network firewall configuration issues
-* `pan_policy_fixer.py` - Fixes detected Palo Alto Network firewall configuration issues
 
 ## Quickstart
 
