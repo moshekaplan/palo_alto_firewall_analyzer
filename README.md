@@ -15,7 +15,7 @@ in `"~\.pan_policy_analyzer\` and instruct you to edit it.
 The second time you launch the analyzer it will detect that "API_KEY.txt" is not present,
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
-Run a single validator on a single device groups:
+Run a single validator on a single device group:
 `pan_policy_validator.py --device-group my_device_group --validator UnusedServices`
 
 Run a single validator on all device groups:
