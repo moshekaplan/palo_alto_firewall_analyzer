@@ -11,10 +11,10 @@ This repository contains the following two scripts:
 
 ## Quickstart
 
-1. Modify `PAN_CONFIG.cfg` with your panorama's hostname and version number.
-1. The first time you launch the validator, it will check for a file
-"API_KEY.txt", with your API key. If "API_KEY.txt" is not present, the script will
-prompt for credentials and save the retrieved API key to "API_KEY.txt"
+The first time you launch the analyzer, it will create a `PAN_CONFIG.cfg` file
+in `"~\.pan_policy_analyzer\` and instruct you to edit it.
+The second time you launch the analyzer it will detect that "API_KEY.txt" is not present,
+and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
 Run a single validator on a single device groups:
 `pan_policy_validator.py --device-group my_device_group --validator UnusedServices`
@@ -24,6 +24,14 @@ Run a single validator on all device groups:
 
 Run all validators on all device groups (this may take a long time):
 `pan_policy_validator.py --all`
+
+## Known Issues
+
+The validators for checking zones (ExtaZones, MissingZones, and ExtraRules) all
+require looking up the zones for address objects on the firewall. This requires many API
+requests and can take a very long time. Given that PA recommends limiting the number of
+concurrent API calls to five, and that's shared among the web UI, these calls are not
+parallelized.
 
 ## License ##
 
