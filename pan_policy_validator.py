@@ -2,6 +2,7 @@
 import argparse
 import configparser
 import datetime
+import os.path
 import time
 
 import palo_alto_firewall_analyzer.validators
@@ -10,15 +11,31 @@ from palo_alto_firewall_analyzer import pan_api
 from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.pan_api_helpers import load_config_package, get_and_save_API_key
 
-DEFAULT_API_KEYFILE = "API_KEY.txt"
-
+DEFAULT_CONFIG_DIR = os.path.expanduser("~\\.pan_policy_analyzer\\")
+DEFAULT_CONFIGFILE  = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
+DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
 
 
 ###############################################################################
 # General helper functions
 ###############################################################################
 
-
+def create_default_config_file(config_path):
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    with open(config_path, 'w') as config_fh:
+        analyzer_config = configparser.ConfigParser(allow_no_value=True)
+        analyzer_config.add_section('analyzer')
+        analyzer_config.set('analyzer', '# Mandatory: The hostname of the panorama to query')
+        analyzer_config.set('analyzer', 'Panorama', 'my-panorama-hostname')
+        analyzer_config.set('analyzer', '# Optional config values, used by validators')
+        analyzer_config.set('analyzer', '# Mandate a specific log profile')
+        analyzer_config.set('analyzer', '# Mandated Logging Profile = default')
+        analyzer_config.set('analyzer', '# Ignore certain DNS prefixes in find_badhostname, as they might not always be available (e.g., DHCP)')
+        analyzer_config.set('analyzer', '# Ignored DNS Prefixes = PC-,iPhone')
+        analyzer_config.set('analyzer', '# Specify which Security Profile Groups are allowed and the default profile')
+        analyzer_config.set('analyzer', '# Allowed Group Profiles = Security Profile Group-default,Security Profile Group-1,Security Profile Group-2')
+        analyzer_config.set('analyzer', '# Default Group Profile = Security Profile Group-default')
+        analyzer_config.write(config_fh)
 
 def run_policy_validators(validators, profilepackage, output_fname):
     problems = {}
@@ -72,22 +89,31 @@ Retrieves PAN FW policy and checks it for various issues."""
     parser = argparse.ArgumentParser(description=description, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--all", help="Run validator for all Device Groups", action='store_true')
+    group.add_argument("--all", help="Run validators on all Device Groups", action='store_true')
     group.add_argument("--device-group", help="Device Group to run through validator")
     parser.add_argument("--validator", help="Only run specified validator",
                         choices=sorted(get_policy_validators().keys()))
     parser.add_argument("--quiet", help="Silence output", action='store_true')
-    parser.add_argument("--config", help="Config file to read", default="PAN_CONFIG.cfg")
+    parser.add_argument("--config", help=f"Config file to read (default is {DEFAULT_CONFIGFILE})", default=DEFAULT_CONFIGFILE)
     parser.add_argument("--profile", help="Config profile to run through validator (defaults to first config entry)")
-    parser.add_argument("--api", help="File with API Key", default=DEFAULT_API_KEYFILE)
-    parser.add_argument("--debug", help="Write all debug output to pan_validator_debug.log", action='store_true')
+    parser.add_argument("--api", help=f"File with API Key (default is {DEFAULT_API_KEYFILE})", default=DEFAULT_API_KEYFILE)
+    parser.add_argument("--debug", help="Write all debug output to pan_analyzer_debug_YYMMDD_HHMMSS.log", action='store_true')
     parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)
     parsed_args = parser.parse_args()
 
+    timestamp_string = datetime.datetime.today().strftime('%Y%m%d_%H%M%S')
     if parsed_args.debug:
-        pan_api.set_debug(True, 'pan_validator_debug.log')
+        pan_api.set_debug(True, f'pan_analyzer_debug_{timestamp_string}.log')
 
     validator_config = configparser.ConfigParser()
+    # Validate config file exists
+    if not os.path.isfile(parsed_args.config):
+        if parsed_args.config == DEFAULT_CONFIGFILE:
+            create_default_config_file(parsed_args.config)
+            raise Exception(f"Config file '{parsed_args.config}' did not exist! Please edit the newly-created config and re-run.")
+        else:
+            raise Exception(f"Config file '{parsed_args.config}' does not exist! Exiting")
+
     validator_config.read(parsed_args.config)
 
     if parsed_args.profile:
@@ -115,8 +141,6 @@ Retrieves PAN FW policy and checks it for various issues."""
         validators = get_policy_validators()
 
     # Build the output string
-    timestamp_string = datetime.datetime.today().strftime('%Y%m%d_%H%M%S')
-
     if parsed_args.device_group:
         devicegroup_string = "_" + parsed_args.device_group
     else:
@@ -132,7 +156,7 @@ Retrieves PAN FW policy and checks it for various issues."""
     else:
         limit_string = ""
 
-    output_fname = f'pan_policy_validator_output_{timestamp_string}_{config_profile}{devicegroup_string}{validators_string}{limit_string}.txt'
+    output_fname = f'pan_analyzer_output_{timestamp_string}{devicegroup_string}{validators_string}{limit_string}.txt'
 
     verbose = not parsed_args.quiet
 

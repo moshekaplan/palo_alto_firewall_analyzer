@@ -20,7 +20,6 @@ class TestExtraZones(unittest.TestCase):
 
         profilepackage = ProfilePackage(
             panorama='',
-            version='',
             api_key='',
             pan_config=PanConfig('<_/>'),
             mandated_log_profile='',
@@ -77,6 +76,43 @@ class TestExtraZones(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].data.get('name'), 'extra_zone_rule')
 
+    @patch('palo_alto_firewall_analyzer.validators.zone_based_checks.get_firewall_zone')
+    def test_with_extrazone_hardcoded_ip(self, get_firewall_zone):
+        test_xml = """\
+        <response status="success"><result><config>
+          <devices><entry><device-group><entry name="test_dg">
+            <pre-rulebase><security><rules>
+              <entry name="extra_zone_rule">
+                <from>
+                  <member>src_zone</member>
+                </from>
+                <to>
+                  <member>dest_zone</member>
+                  <member>dest_zone_extra</member>
+                </to>
+                <source>
+                  <member>127.0.0.2</member>
+                </source>
+                <destination>
+                  <member>ip-127.0.0.3</member>
+                </destination>
+              </entry>
+            </rules></security></pre-rulebase>
+            <address>
+              <entry name="ip-127.0.0.3"><ip-netmask>127.0.0.3</ip-netmask></entry>
+            </address>
+          </entry></device-group></entry></devices>
+        </config></result></response>
+        """
+        pan_config = PanConfig(test_xml)
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
+        addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+
+        profilepackage = self.create_profilepackage(rules, addresses)
+        get_firewall_zone.side_effect = ['src_zone', 'dest_zone']
+        results = find_extra_zones(profilepackage)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].data.get('name'), 'extra_zone_rule')
 
 if __name__ == "__main__":
     unittest.main()

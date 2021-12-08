@@ -6,14 +6,14 @@ def find_badhostname(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
     devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
-    ignored_dns_prefixes = profilepackage.ignored_dns_prefixes
+    ignored_dns_prefixes = [dns_prefix.lower() for dns_prefix in profilepackage.ignored_dns_prefixes]
 
     badentries = []
 
     print("*" * 80)
-    print("Checking for non-existent hostnames")
+    print("Checking for non-resolving hostnames")
 
-    bad_fqdns = set()
+    bad_address_objects = set()
     for i, device_group in enumerate(device_groups):
         print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
         for entry in devicegroup_objects[device_group]['Addresses']:
@@ -24,8 +24,8 @@ def find_badhostname(profilepackage):
                     continue
                 ip = cached_dns_lookup(fqdn_text)
                 if ip is None:
-                    bad_fqdns.add(entry_name)
-                    text = f"Device Group {device_group}'s address '{entry_name}' uses the following FQDN which don't resolve: '{fqdn_text}'"
+                    bad_address_objects.add(entry_name)
+                    text = f"Device Group {device_group}'s address '{entry_name}' uses the following FQDN which doesn't resolve: '{fqdn_text}'"
                     badentries.append(
                         BadEntry(data=entry, text=text, device_group=device_group, entry_type='Addresses'))
 
@@ -35,9 +35,9 @@ def find_badhostname(profilepackage):
             address_group_members = []
             for ag_member in entry.findall('./static/member'):
                 address_group_members.append(ag_member.text)
-            bad_members = bad_fqdns & set(address_group_members)
+            bad_members = bad_address_objects & set(address_group_members)
             if bad_members:
-                text = f"Device Group {device_group}'s Address Group '{entry.get('name')}' uses the following FQDNs which don't resolve: {sorted(bad_members)}"
+                text = f"Device Group {device_group}'s Address Group '{entry.get('name')}' uses the following address objects which don't resolve: {sorted(bad_members)}"
                 badentries.append(
                     BadEntry(data=entry, text=text, device_group=device_group, entry_type='AddressGroups'))
 
@@ -56,9 +56,9 @@ def find_badhostname(profilepackage):
                 dest_members = set([dm.text for dm in entry.findall('./destination/member')])
 
                 for members, direction in [(source_members, 'Source'), (dest_members, 'Dest')]:
-                    bad_members = bad_fqdns & members
+                    bad_members = bad_address_objects & members
                     if bad_members:
-                        text = f"Device Group {device_group}'s {ruletype} '{rule_name}' {direction} contain the following addresses which don't resolve: {sorted(bad_members)}"
+                        text = f"Device Group {device_group}'s {ruletype} '{rule_name}' {direction} contain the following address objects which don't resolve: {sorted(bad_members)}"
                         badentries.append(
                             BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype))
     return badentries

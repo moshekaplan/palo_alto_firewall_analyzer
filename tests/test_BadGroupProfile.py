@@ -14,7 +14,6 @@ class TestBadGroupProfile(unittest.TestCase):
 
         profilepackage = ProfilePackage(
             panorama='',
-            version='',
             api_key='',
             pan_config=PanConfig('<_/>'),
             mandated_log_profile='',

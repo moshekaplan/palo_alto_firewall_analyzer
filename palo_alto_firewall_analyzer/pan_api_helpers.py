@@ -8,11 +8,17 @@ from palo_alto_firewall_analyzer.core import squash_all_devicegroups, ProfilePac
 
 def load_config_package(config, api_key, device_group, limit, verbose):
     panorama = config['Panorama']
-    version = config['Version']
-    mandated_log_profile = config['Mandated Logging Profile']
-    allowed_group_profiles = config['Allowed Group Profiles'].split(',')
-    default_group_profile = config['Default Group Profile']
-    ignored_dns_prefixes = tuple([prefix.lower() for prefix in config['Ignored DNS Prefixes'].split(',')])
+    mandated_log_profile = config.get('Mandated Logging Profile')
+    if config.get('Allowed Group Profiles'):
+        allowed_group_profiles = config.get('Allowed Group Profiles').split(',')
+    else:
+        allowed_group_profiles = tuple()
+    default_group_profile = config.get('Default Group Profile')
+
+    if config.get('Ignored DNS Prefixes'):
+        ignored_dns_prefixes = tuple([prefix.lower() for prefix in config.get('Ignored DNS Prefixes','').split(',')])
+    else:
+        ignored_dns_prefixes = tuple()
 
     config_file = pan_api.export_configuration2(panorama, api_key)
     pan_config = PanConfig(config_file)
@@ -97,7 +103,6 @@ def load_config_package(config, api_key, device_group, limit, verbose):
 
     profilepackage = ProfilePackage(
         panorama=panorama,
-        version=version,
         api_key=api_key,
         pan_config=pan_config,
         mandated_log_profile=mandated_log_profile,

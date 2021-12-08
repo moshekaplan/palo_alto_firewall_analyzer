@@ -49,7 +49,6 @@ def get_policy_fixers():
 class ProfilePackage:
     """Class for storing the values associated with a firewall configuration"""
     panorama: str
-    version: str
     api_key: str
     pan_config: PanConfig
     mandated_log_profile: str
