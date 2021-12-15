@@ -92,6 +92,10 @@ def find_missing_zones(profilepackage):
     devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     api_key = profilepackage.api_key
+    no_api = profilepackage.no_api
+
+    if no_api:
+        return []
 
     badentries = []
     print ("*"*80)
@@ -164,6 +168,10 @@ def find_extra_zones(profilepackage):
     devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
     api_key = profilepackage.api_key
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
+    no_api = profilepackage.no_api
+
+    if no_api:
+        return []
 
     badentries = []
     print ("*"*80)
@@ -235,6 +243,10 @@ def find_extra_rules(profilepackage):
     devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
     api_key = profilepackage.api_key
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
+    no_api = profilepackage.no_api
+
+    if no_api:
+        return []
 
     badentries = []
     print ("*"*80)

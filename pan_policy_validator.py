@@ -97,6 +97,7 @@ Retrieves PAN FW policy and checks it for various issues."""
     parser.add_argument("--config", help=f"Config file to read (default is {DEFAULT_CONFIGFILE})", default=DEFAULT_CONFIGFILE)
     parser.add_argument("--profile", help="Config profile to run through validator (defaults to first config entry)")
     parser.add_argument("--api", help=f"File with API Key (default is {DEFAULT_API_KEYFILE})", default=DEFAULT_API_KEYFILE)
+    parser.add_argument("--no-api", help=f"Skip validators that require making API requests", action='store_true')
     parser.add_argument("--debug", help="Write all debug output to pan_analyzer_debug_YYMMDD_HHMMSS.log", action='store_true')
     parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)
     parsed_args = parser.parse_args()
@@ -156,13 +157,19 @@ Retrieves PAN FW policy and checks it for various issues."""
     else:
         limit_string = ""
 
-    output_fname = f'pan_analyzer_output_{timestamp_string}{devicegroup_string}{validators_string}{limit_string}.txt'
+    if parsed_args.no_api:
+        no_api_string = "_noapi"
+    else:
+        no_api_string = ""
+
+    output_fname = f'pan_analyzer_output_{timestamp_string}{devicegroup_string}{no_api_string}{validators_string}{limit_string}.txt'
 
     verbose = not parsed_args.quiet
+    no_api = parsed_args.no_api
 
     start_time = time.time()
     profilepackage = load_config_package(validator_config[config_profile], API_KEY, parsed_args.device_group,
-                                         parsed_args.limit, verbose)
+                                         parsed_args.limit, verbose, no_api)
     problems, total_problems = run_policy_validators(validators, profilepackage, output_fname)
     write_validator_output(problems, output_fname, 'text')
     end_time = time.time()

@@ -21,6 +21,9 @@ Run a single validator on a single device group:
 Run a single validator on all device groups:
 `pan_policy_validator.py --all --validator UnusedServices`
 
+Run all non-API validators on all device groups:
+`pan_policy_validator.py --all --no-api`
+
 Run all validators on all device groups (this may take a long time):
 `pan_policy_validator.py --all`
 
@@ -30,7 +33,7 @@ The validators for checking zones (ExtaZones, MissingZones, and ExtraRules) all
 require looking up the zones for address objects on the firewall. This requires many API
 requests and can take a very long time. Given that PA recommends limiting the number of
 concurrent API calls to five, and that's shared among the web UI, these calls are not
-parallelized.
+parallelized. If you don't need those validators, run with `--no-api` to skip them.
 
 ## License ##
 

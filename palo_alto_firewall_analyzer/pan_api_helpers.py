@@ -6,7 +6,7 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 from palo_alto_firewall_analyzer.core import squash_all_devicegroups, ProfilePackage
 
 
-def load_config_package(config, api_key, device_group, limit, verbose):
+def load_config_package(config, api_key, device_group, limit, verbose, no_api):
     panorama = config['Panorama']
     mandated_log_profile = config.get('Mandated Logging Profile')
     if config.get('Allowed Group Profiles'):
@@ -116,7 +116,8 @@ def load_config_package(config, api_key, device_group, limit, verbose):
         devicegroup_objects=devicegroup_objects,
         devicegroup_exclusive_objects=devicegroup_exclusive_objects,
         rule_limit_enabled=rule_limit_enabled,
-        verbose=verbose
+        verbose=verbose,
+        no_api=no_api
     )
     return profilepackage
 

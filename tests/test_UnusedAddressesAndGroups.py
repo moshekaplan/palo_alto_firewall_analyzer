@@ -35,7 +35,8 @@ class TestUnusedServices(unittest.TestCase):
             devicegroup_objects=devicegroup_objects,
             devicegroup_exclusive_objects={},
             rule_limit_enabled=False,
-            verbose=False
+            verbose=False,
+            no_api=False
         )
         return profilepackage
 

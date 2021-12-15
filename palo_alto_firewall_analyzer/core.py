@@ -63,6 +63,7 @@ class ProfilePackage:
     devicegroup_exclusive_objects: typing.Dict
     rule_limit_enabled: bool
     verbose: bool
+    no_api: bool
 
 
 BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', 'entry_type'])
