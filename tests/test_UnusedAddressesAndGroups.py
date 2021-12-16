@@ -4,10 +4,10 @@ import unittest
 
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.unused_addresses_and_groups import find_unused_addresses_and_groups
+from palo_alto_firewall_analyzer.validators.unused_addresses_and_groups import find_unused_addresses
 
 
-class TestUnusedServices(unittest.TestCase):
+class TestUnusedAddressesAndGroups(unittest.TestCase):
     @staticmethod
     def create_profilepackage(shared_addresses, shared_addressgroups, shared_securityprerules, shared_natprerules, dg_addresses, dg_securityprerules):
         device_groups = ["shared"]
@@ -40,7 +40,7 @@ class TestUnusedServices(unittest.TestCase):
         )
         return profilepackage
 
-    def test_unusedservices(self):
+    def test_unusedaddresses(self):
         test_xml = """\
         <response status="success"><result><config>
           <shared>
@@ -86,7 +86,7 @@ class TestUnusedServices(unittest.TestCase):
 
         profilepackage = self.create_profilepackage(shared_addresses, shared_addressgroups, shared_securityprerules, shared_natprerules, dg_addresses, dg_securityprerules)
 
-        results = find_unused_addresses_and_groups(profilepackage)
+        results = find_unused_addresses(profilepackage)
 
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 1)
