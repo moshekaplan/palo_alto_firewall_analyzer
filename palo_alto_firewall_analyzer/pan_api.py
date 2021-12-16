@@ -46,6 +46,7 @@ def pan_api(firewall, method, path, params, api_key=None, data=None):
         write_debug("Error: No content! Retry count: f{i+1}")
     else:
         raise Exception("API request failed 3 times!")
+    response.raise_for_status()
     return response
 
 
@@ -331,8 +332,33 @@ def get_devicegroup_object(panorama, version, api_key, objecttype, locationtype,
 
 
 ###############################################################################
-# API functions
+# REST API wrappers
 ###############################################################################
+
+
+def delete_object(panorama, version, api_key, object_type, object_to_delete, location_type, device_group=None):
+    if object_type not in (SUPPORTED_OBJECT_TYPES):
+        raise Exception(f"Invalid object_type '{object_type}' ! object_type must be one of {SUPPORTED_OBJECT_TYPES}")
+
+    if location_type not in SUPPORTED_LOCATION_TYPES:
+        raise Exception(
+            f"Unsupported location_type of {location_type}! location_type must be one of {SUPPORTED_LOCATION_TYPES}")
+
+    path = f"/restapi/v{version}/Objects/{object_type}"
+    params = {
+        'location': location_type,
+        'output-format': 'json',
+    }
+    if location_type == 'device-group':
+        params['device-group'] = device_group
+
+    params['name'] = object_to_delete
+    response = pan_api(panorama, method="delete", path=path, params=params, api_key=api_key)
+    return response.json()
+
+##################################################
+# Note: The following functions need to be retested prior to use
+##################################################
 def update_devicegroup_policy(panorama, version, api_key, policy, policytype, locationtype, device_group=None):
     if policytype not in (SUPPORTED_POLICY_TYPES):
         raise Exception(f"Invalid policytype '{policytype}' ! polictype must be one of {SUPPORTED_POLICY_TYPES}")
@@ -384,21 +410,7 @@ def delete_devicegroup_policy(panorama, version, api_key, policy_name, policytyp
     return response.json()
 
 
-def delete_object(panorama, version, api_key, object_type, object_to_delete, location_type, device_group=None):
-    if object_type not in (SUPPORTED_OBJECT_TYPES):
-        raise Exception(f"Invalid policytype '{object_type}' ! polictype must be one of {SUPPORTED_OBJECT_TYPES}")
 
-    path = f"/restapi/v{version}/Objects/{object_type}"
-    params = {
-        'location': location_type,
-        'output-format': 'json',
-    }
-    if location_type == 'device-group':
-        params['device-group'] = device_group
-
-    params['name'] = object_to_delete['@name']
-    response = pan_api(panorama, method="delete", path=path, params=params, api_key=api_key)
-    return response.json()
 
 
 def create_object(panorama, version, api_key, object_type, object_to_create, locationtype, device_group=None):

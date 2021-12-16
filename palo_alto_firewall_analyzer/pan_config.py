@@ -141,6 +141,13 @@ class PanConfig:
         xpath = xpath_location_prefix + self.SUPPORTED_OBJECT_TYPES[object_type]
         return self.configroot.findall(xpath)
 
+    @functools.lru_cache(maxsize=None)
+    def get_major_version(self):
+        # Returns in the form '10.0.0'
+        full_version = self.configroot.find('.config').get('version')
+        # API uses the form: '10.0'
+        major_version = full_version.rsplit('.', 1)[0]
+        return major_version
 
 def main():
     fname = "config_pretty.xml"

@@ -67,7 +67,7 @@ def find_unused_addressgroups(profilepackage):
     print ("Checking for unused Address Group objects")
 
     for i, device_group in enumerate(device_groups):
-        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s address objects")
+        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address Group objects")
         addressgroups = {entry.get('name'):entry for entry in devicegroup_objects[device_group]['AddressGroups']}
 
         # An address or group can be used by any child device group's Address group or policy. Need to check all of them.
