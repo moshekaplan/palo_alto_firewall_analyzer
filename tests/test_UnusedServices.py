@@ -4,7 +4,7 @@ import unittest
 
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.unused_services import find_unused_services
+from palo_alto_firewall_analyzer.core import get_policy_validators
 
 
 class TestUnusedServices(unittest.TestCase):
@@ -82,6 +82,7 @@ class TestUnusedServices(unittest.TestCase):
         dg_natrules = pan_config.get_devicegroup_policy('NATPreRules', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, shared_servicegroups, shared_securityprerules, dg_services, dg_securityprerules, dg_natrules)
 
+        _, _, find_unused_services = get_policy_validators()['UnusedServices']
         results = find_unused_services(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 1)
