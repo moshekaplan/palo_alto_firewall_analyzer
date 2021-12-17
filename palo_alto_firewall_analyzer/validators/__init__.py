@@ -1,6 +1,7 @@
 from . import bad_group_profile
 from . import bad_hostnames
 from . import bad_log_setting
+from . import find_disabled_policies
 from . import find_equivalent_objects
 from . import find_shadowing_objects
 from . import shadowing_addresses_and_groups

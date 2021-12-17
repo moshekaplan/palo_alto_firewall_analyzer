@@ -337,7 +337,7 @@ def get_devicegroup_object(panorama, version, api_key, objecttype, locationtype,
 
 
 def delete_object(panorama, version, api_key, object_type, object_to_delete, location_type, device_group=None):
-    if object_type not in (SUPPORTED_OBJECT_TYPES):
+    if object_type not in SUPPORTED_OBJECT_TYPES:
         raise Exception(f"Invalid object_type '{object_type}' ! object_type must be one of {SUPPORTED_OBJECT_TYPES}")
 
     if location_type not in SUPPORTED_LOCATION_TYPES:
@@ -353,6 +353,27 @@ def delete_object(panorama, version, api_key, object_type, object_to_delete, loc
         params['device-group'] = device_group
 
     params['name'] = object_to_delete
+    response = pan_api(panorama, method="delete", path=path, params=params, api_key=api_key)
+    return response.json()
+
+
+def delete_policy(panorama, version, api_key, policy_type, policy_name, location_type, device_group=None):
+    if policy_type not in SUPPORTED_POLICY_TYPES:
+        raise Exception(f"Invalid policy_type '{policy_type}' ! polictype must be one of {SUPPORTED_POLICY_TYPES}")
+
+    if location_type not in SUPPORTED_LOCATION_TYPES:
+        raise Exception(
+            f"Unsupported location_type of {location_type}! location_type must be one of {SUPPORTED_LOCATION_TYPES}")
+
+    path = f"/restapi/v{version}/Policies/{policy_type}"
+    params = {
+        'location': location_type,
+        'output-format': 'json'
+    }
+    if location_type == 'device-group':
+        params['device-group'] = device_group
+
+    params['name'] = policy_name
     response = pan_api(panorama, method="delete", path=path, params=params, api_key=api_key)
     return response.json()
 
@@ -383,34 +404,6 @@ def update_devicegroup_policy(panorama, version, api_key, policy, policytype, lo
     response = pan_api(panorama, method="put", path=path, params=params, data=data, api_key=api_key)
 
     return response.json()
-
-
-def delete_devicegroup_policy(panorama, version, api_key, policy_name, policytype, locationtype, device_group=None):
-    if policytype not in (SUPPORTED_POLICY_TYPES):
-        raise Exception(f"Invalid policytype '{policytype}' ! polictype must be one of {SUPPORTED_POLICY_TYPES}")
-
-    allowed_locationtypes = ['shared', 'device-group']
-    if locationtype not in allowed_locationtypes:
-        raise Exception(
-            f"Unsupported locationtype of {locationtype}! locationtype must be one of {allowed_locationtypes}")
-
-    path = f"/restapi/v{version}/Policies/{policytype}"
-    params = {
-        'output-format': 'json',
-        'location': locationtype
-    }
-
-    if locationtype == 'device-group':
-        params['device-group'] = device_group
-
-    params['name'] = policy_name
-
-    response = pan_api(panorama, method="delete", path=path, params=params, api_key=api_key)
-
-    return response.json()
-
-
-
 
 
 def create_object(panorama, version, api_key, object_type, object_to_create, locationtype, device_group=None):
