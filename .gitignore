@@ -1,4 +1,9 @@
+# Files that are project-specific
 API_KEY.txt
+pan_analyzer_output_*
+pan_analyzer_debug_*
+pan_fixer_output_*
+pan_fixer_debug_*
 
 # Visual Studio Code temporary files
 .vscode/
