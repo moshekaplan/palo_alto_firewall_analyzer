@@ -29,7 +29,7 @@ def find_local_similar_names(devicegroup_objects, device_group, object_type1, ob
         elif obj2s:
             suffix_text = obj2s_text
 
-        text = f"Device Group {device_group}'s contains objects with similar names: {suffix_text}"
+        text = f"Device Group {device_group} contains objects with similar names: {suffix_text}"
         badentries.append(BadEntry(data=dupes, text=text, device_group=device_group, entry_type=object_type1))
     return badentries
 
