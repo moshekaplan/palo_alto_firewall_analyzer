@@ -16,19 +16,23 @@ in `"~\.pan_policy_analyzer\` and instruct you to edit it.
 The second time you launch the analyzer it will detect that "API_KEY.txt" is not present,
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
-* Run a single validator on a single device group:
-`pan_policy_validator.py --device-group my_device_group --validator UnusedServices`
-
-* Run a single validator on all device groups:
-`pan_policy_validator.py --all --validator UnusedServices`
-
 * Run all non-API validators on all device groups:
 `pan_policy_validator.py --all --no-api`
 
 * Run all validators on all device groups (this may take a long time):
 `pan_policy_validator.py --all`
 
-If you're not sure where to start, I recommend: `pan_policy_validator.py --all --no-api`
+* Run a single validator on a single device group:
+`pan_policy_validator.py --device-group my_device_group --validator UnusedServices`
+
+* Run a single validator on all device groups:
+`pan_policy_validator.py --all --validator UnusedServices`
+
+* Run all non-API validators on an XML configuration file downloaded with "Export Panorama configuration version":
+`pan_policy_validator.py --all --xml 12345.xml`
+
+If you're not sure where to start, I recommend downloading an XML file from:
+`Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_policy_validator.py --all --xml 12345.xml`
 
 ## Known Issues
 
