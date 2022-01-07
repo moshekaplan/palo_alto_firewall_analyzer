@@ -155,7 +155,7 @@ def find_missing_zones(profilepackage):
 
                     if missing_zones:
                         missing_template = "Members {members} require {zonetype} zone '{zone}'."
-                        missing_text = " ".join([missing_template.format(zone=zone, members=calculated_zones_to_members[zone], zonetype=zonetype) for zone in missing_zones])
+                        missing_text = " ".join([missing_template.format(zone=zone, members=sorted(set(calculated_zones_to_members[zone])), zonetype=zonetype) for zone in missing_zones])
                         text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' uses {zonetype} zones {zones}. " + missing_text
                         print (text)
                         badentries.append(BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype))
