@@ -18,8 +18,16 @@ class PanConfig:
      will be the same as those used with the XML API.
     """
 
-    def __init__(self, configdata: str):
-        self.configroot = xml.etree.ElementTree.fromstring(configdata).find('./result')
+    def __init__(self, configdata: str, from_file=False):
+        if from_file:
+            # fake_response = xml.etree.ElementTree.Element('response')
+            conf = xml.etree.ElementTree.fromstring(configdata)
+            fake_result = xml.etree.ElementTree.Element('result')
+            fake_result.append(conf)
+            # fake_response.append(fake_result)
+            self.configroot = fake_result
+        else:
+            self.configroot = xml.etree.ElementTree.fromstring(configdata).find('./result')
 
     @functools.lru_cache(maxsize=None)
     def get_device_groups(self):

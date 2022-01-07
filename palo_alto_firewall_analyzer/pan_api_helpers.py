@@ -1,3 +1,4 @@
+import collections
 import functools
 import getpass
 
@@ -6,7 +7,7 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 from palo_alto_firewall_analyzer.core import squash_all_devicegroups, ProfilePackage
 
 
-def load_config_package(config, api_key, device_group, limit, verbose, no_api):
+def load_config_package(config, api_key, device_group, limit, verbose, no_api, xml_file=None):
     panorama = config['Panorama']
     mandated_log_profile = config.get('Mandated Logging Profile')
     if config.get('Allowed Group Profiles'):
@@ -20,33 +21,33 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api):
     else:
         ignored_dns_prefixes = tuple()
 
-    config_file = pan_api.export_configuration2(panorama, api_key)
-    pan_config = PanConfig(config_file)
+    if xml_file:
+        # The list of firewalls are not available from the API, so
+        # these variables will remain empty
+        with open(xml_file) as fh:
+            xml_config = fh.read()
+        pan_config = PanConfig(xml_config, True)
+        device_groups_and_firewalls = collections.defaultdict(list)
+        active_firewalls_per_devicegroup = collections.defaultdict(list)
+    else:
+        # Load the XML configuration and list of firewalls via API requests
+        xml_config = pan_api.export_configuration2(panorama, api_key)
+        pan_config = PanConfig(xml_config)
+        device_groups_and_firewalls = pan_api.get_device_groups_and_firewalls(panorama, api_key)
+        active_firewalls = pan_api.get_active_firewalls(panorama, api_key)
+        # Build the mapping of active FWs in each device group
+        active_firewalls_per_devicegroup = collections.defaultdict(list)
+        for dg, firewalls in device_groups_and_firewalls.items():
+            active_firewalls_per_devicegroup[dg] = [fw for fw in firewalls if fw in active_firewalls]
 
-    device_group_hierarchy_children, device_group_hierarchy_parent = pan_api.get_device_groups_hierarchy(panorama,
-                                                                                                         api_key)
-
-    device_groups_and_firewalls = pan_api.get_device_groups_and_firewalls(panorama, api_key)
-    active_firewalls = pan_api.get_active_firewalls(panorama, api_key)
-
-    # Build the mapping of active FWs in each device group
-    active_firewalls_per_devicegroup = {}
-    for dg, firewalls in device_groups_and_firewalls.items():
-        active_firewalls_per_devicegroup[dg] = [fw for fw in firewalls if fw in active_firewalls]
-
-    # Build a mapping of device groups to their 'parent' device groups
-    # dgs_in_hierarchy = []
-    # current_dg = device_group
-    # while current_dg in device_group_hierarchy_parent:
-    #    dgs_in_hierarchy.append(device_group_hierarchy_parent[current_dg])
-    #    current_dg = device_group_hierarchy_parent[current_dg]
+    device_group_hierarchy_children, device_group_hierarchy_parent = pan_config.get_device_groups_hierarchy()
 
     # Build a mapping of device groups to their 'child' device groups
-    devicegroups_to_child_devicegroups = squash_all_devicegroups(device_groups_and_firewalls,
-                                                                 device_group_hierarchy_children,
-                                                                 device_group_hierarchy_parent)
+    all_device_groups = pan_config.get_device_groups() + ['shared']
+    devicegroups_to_child_devicegroups = squash_all_devicegroups(all_device_groups,
+                                                                 device_group_hierarchy_children)
 
-    all_active_firewalls_per_devicegroup = {}
+    all_active_firewalls_per_devicegroup = collections.defaultdict(list)
     for dg, child_dgs in devicegroups_to_child_devicegroups.items():
         all_active_firewalls_per_devicegroup[dg] = []
         for child_dg in child_dgs:
@@ -55,13 +56,12 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api):
     # Create and fill in the devicegroup_objects, which represents all entries, per devicegroup
     devicegroup_objects = {}
 
-    all_devicegroups = sorted(list(device_groups_and_firewalls.keys()))
     if device_group:
         device_groups = [device_group]
     else:
-        device_groups = all_devicegroups
+        device_groups = all_device_groups
 
-    for device_group in all_devicegroups:
+    for device_group in all_device_groups:
         devicegroup_objects[device_group] = {}
         devicegroup_objects[device_group]['all_child_device_groups'] = devicegroups_to_child_devicegroups[device_group]
         devicegroup_objects[device_group]['all_active_child_firewalls'] = all_active_firewalls_per_devicegroup[
@@ -86,7 +86,7 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api):
 
     # Build a listing of policy objects that are exclusive to each device group, which won't include policies inherited from the parent device groups
     devicegroup_exclusive_objects = {}
-    for device_group in all_devicegroups:
+    for device_group in all_device_groups:
         devicegroup_exclusive_objects[device_group] = {}
 
         for policy_type in pan_config.SUPPORTED_POLICY_TYPES:

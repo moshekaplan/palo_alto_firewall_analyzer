@@ -133,11 +133,10 @@ def _squash_devicegroup(device_group, device_group_hierarchy_children):
     return sorted(result)
 
 
-def squash_all_devicegroups(device_groups_and_firewalls, device_group_hierarchy_children,
-                            device_group_hierarchy_parent):
+def squash_all_devicegroups(device_groups, device_group_hierarchy_children):
     """Squashes all device groups, so that a single device group can be mapped to all child Device Groups
     This is useful for when seeing which device groups rules at a higher-level device group apply to"""
     all_devicegroups = {}
-    for device_group in device_groups_and_firewalls.keys():
+    for device_group in device_groups:
         all_devicegroups[device_group] = _squash_devicegroup(device_group, device_group_hierarchy_children)
     return all_devicegroups
