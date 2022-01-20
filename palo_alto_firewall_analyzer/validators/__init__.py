@@ -4,6 +4,7 @@ from . import bad_log_setting
 from . import find_disabled_policies
 from . import find_equivalent_objects
 from . import find_shadowing_objects
+from . import misleading_objects
 from . import shadowing_addresses_and_groups
 from . import similar_addresses_and_groups
 from . import unused_addresses_and_groups

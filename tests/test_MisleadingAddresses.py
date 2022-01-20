@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+import unittest
+from unittest.mock import patch
+
+from palo_alto_firewall_analyzer.core import ProfilePackage
+from palo_alto_firewall_analyzer.pan_config import PanConfig
+from palo_alto_firewall_analyzer.validators.misleading_objects import find_misleading_addresses
+
+
+class TestMisleadingAddresses(unittest.TestCase):
+    @staticmethod
+    def create_profilepackage(addresses, address_groups, rules, ignored_dns_prefixes):
+        device_groups = ["shared"]
+        devicegroup_objects = {"shared": {}}
+        devicegroup_objects["shared"]['Addresses'] = addresses
+        devicegroup_objects["shared"]['AddressGroups'] = address_groups
+        devicegroup_exclusive_objects = {'shared': {'SecurityPreRules': rules, 'SecurityPostRules': []}}
+        ignored_dns_prefixes = ignored_dns_prefixes
+
+        profilepackage = ProfilePackage(
+            panorama='',
+            api_key='',
+            pan_config=PanConfig('<_/>'),
+            mandated_log_profile='',
+            allowed_group_profiles=[],
+            default_group_profile='',
+            ignored_dns_prefixes=ignored_dns_prefixes,
+            device_group_hierarchy_children={},
+            device_group_hierarchy_parent={},
+            device_groups_and_firewalls={},
+            device_groups=device_groups,
+            devicegroup_objects=devicegroup_objects,
+            devicegroup_exclusive_objects=devicegroup_exclusive_objects,
+            rule_limit_enabled=False,
+            verbose=False,
+            no_api=False
+        )
+        return profilepackage
+
+    @patch('palo_alto_firewall_analyzer.validators.bad_hostnames.cached_dns_lookup')
+    def test_with_mandated_profile(self, mocked_dns_lookup):
+        test_xml = """\
+        <response status="success"><result><config>
+          <shared>
+            <address>
+              <entry name="valid_ip_127.0.0.1"><ip-netmask>127.0.0.1</ip-netmask></entry>
+              <entry name="invalid_ip_127.0.0.2"><ip-netmask>127.0.0.1</ip-netmask></entry>
+              <entry name="valid_range_127.0.0.1"><ip-range>127.0.0.1-127.0.0.255</ip-range></entry>
+              <entry name="invalid_range_128.0.0.1"><ip-range>127.0.0.1-127.0.0.255</ip-range></entry>
+              <entry name="valid_fqdn_valid.tld"><fqdn>valid.tld</fqdn></entry>
+              <entry name="invalid_fqdn_invalid.tld"><fqdn>missing.invalid.tld</fqdn></entry>
+            </address>
+          </shared>
+        </config></result></response>
+        """
+        pan_config = PanConfig(test_xml)
+        addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
+        address_groups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'shared')
+        ignored_dns_prefixes = ["ignored"]
+        mocked_dns_lookup.side_effect = ['127.0.0.1', None]
+        profilepackage = self.create_profilepackage(addresses, address_groups, rules, ignored_dns_prefixes)
+
+        results = find_misleading_addresses(profilepackage)
+        print(results)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(results[0].data.get('name'), 'invalid_ip_127.0.0.2')
+        self.assertEqual(results[1].data.get('name'), 'invalid_range_128.0.0.1')
+        self.assertEqual(results[2].data.get('name'), 'invalid_fqdn_invalid.tld')
+
+
+if __name__ == "__main__":
+    unittest.main()
