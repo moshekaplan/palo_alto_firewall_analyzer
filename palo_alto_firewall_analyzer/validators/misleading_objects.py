@@ -7,10 +7,9 @@ import re
 def find_misleading_addresses(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
-    pan_config = profilepackage.pan_config
 
     # NOTE: IP Wildcards not supported yet
-    ADDRESS_TYPES = ['ip-netmask', 'ip-range', 'fqdn']
+    ADDRESS_TYPES = ('ip-netmask', 'ip-range', 'fqdn')
     IP_REGEX = r"((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
     badentries = []
 
@@ -18,7 +17,7 @@ def find_misleading_addresses(profilepackage):
     print ("Checking for misleading Address objects")
 
     for i, device_group in enumerate(device_groups):
-        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s address objects")
+        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address objects")
         for address_entry in devicegroup_objects[device_group]['Addresses']:
             # For simplicity, convert the XML object to a dict:
             address_dict = xml_object_to_dict(address_entry)
@@ -40,16 +39,60 @@ def find_misleading_addresses(profilepackage):
                     text = f"Device Group {device_group}'s Address {entry_name} has a misleading value of {entry_value}, because the FQDN's domain is not present in the name"
                     badentries.append(BadEntry(data=address_entry, text=text, device_group=device_group, entry_type='Addresses'))
             # For IPs, the IP should be present in the name, if the name 'looks' like it contains an IP (based on regex):
-            if entry_type == 'ip-netmask':
+            elif entry_type == 'ip-netmask':
                 # This can optionally include a '/'
                 ip_address = entry_value.split('/', 1)[0]
                 if ip_address not in entry_name and re.search(IP_REGEX, entry_name) is not None:
                     text = f"Device Group {device_group}'s Address {entry_name} has a misleading value of {entry_value}, because the name appears to contain an IP address, but the IP address is not in the name"
                     badentries.append(BadEntry(data=address_entry, text=text, device_group=device_group, entry_type='Addresses'))
-            if entry_type == 'ip-range':
+            elif entry_type == 'ip-range':
                 # This can optionally include a '-'
                 ip_address = entry_value.split('-', 1)[0]
                 if ip_address not in entry_name and re.search(IP_REGEX, entry_name) is not None:
                     text = f"Device Group {device_group}'s Address {entry_name} has a misleading value of {entry_value}, because the name appears to contain an IP address, but the IP address is not in the name"
                     badentries.append(BadEntry(data=address_entry, text=text, device_group=device_group, entry_type='Addresses'))
+    return badentries
+
+
+@register_policy_validator("MisleadingServices", "Service objects that have a misleading name")
+def find_misleading_services(profilepackage):
+    device_groups = profilepackage.device_groups
+    devicegroup_objects = profilepackage.devicegroup_objects
+
+    PROTOCOL_TYPES = ('tcp', 'udp')
+
+    badentries = []
+
+    print ("*"*80)
+    print ("Checking for misleading Service objects")
+
+    for i, device_group in enumerate(device_groups):
+        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Service objects")
+        for service_entry in devicegroup_objects[device_group]['Services']:
+            # For simplicity, convert the XML object to a dict:
+            service_dict = xml_object_to_dict(service_entry)
+            entry_name = service_dict['entry']['@name']
+            for protocol_type in PROTOCOL_TYPES:
+                if protocol_type in service_dict['entry']['protocol'].keys():
+                    entry_protocol = protocol_type
+                    break
+            else:
+                # This should not be possible!
+                continue
+            entry_port = service_dict['entry']['protocol'][entry_protocol]['port']
+            contains_protocol = 'tcp' in entry_name.lower() or 'udp' in entry_name.lower()
+            contains_port = re.search(r'\d{3,}', entry_name) is not None
+            protocol_correct = entry_protocol in entry_name.lower()
+            port_correct = entry_port.split('-',1)[0] in entry_name
+
+            if contains_protocol or contains_port:
+                if contains_protocol and not protocol_correct and contains_port and not port_correct:
+                    text = f"Device Group {device_group}'s Service {entry_name} uses protocol {entry_protocol} and port {entry_port}"
+                    badentries.append(BadEntry(data=service_entry, text=text, device_group=device_group, entry_type='Services'))
+                elif contains_protocol and not protocol_correct:
+                    text = f"Device Group {device_group}'s Service {entry_name} uses protocol {entry_protocol}"
+                    badentries.append(BadEntry(data=service_entry, text=text, device_group=device_group, entry_type='Services'))
+                elif contains_port and not port_correct:
+                    text = f"Device Group {device_group}'s Service {entry_name} uses port {entry_port}"
+                    badentries.append(BadEntry(data=service_entry, text=text, device_group=device_group, entry_type='Services'))
     return badentries
