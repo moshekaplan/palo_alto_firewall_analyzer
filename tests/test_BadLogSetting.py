@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.bad_log_setting import find_bad_log_setting
 
 
 class TestBadLogSetting(unittest.TestCase):
@@ -50,7 +50,8 @@ class TestBadLogSetting(unittest.TestCase):
         rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(mandated_log_profile, rules)
 
-        results = find_bad_log_setting(profilepackage)
+        _, _, validator_function = get_policy_validators()['BadLogSetting']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].data.get('name'), 'missing_log-setting')
         self.assertEqual(results[1].data.get('name'), 'wrong_log-setting')
@@ -72,7 +73,8 @@ class TestBadLogSetting(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(mandated_log_profile, rules)
-        results = (find_bad_log_setting(profilepackage))
+        _, _, validator_function = get_policy_validators()['BadLogSetting']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].data.get('name'), 'missing_log-setting')
 

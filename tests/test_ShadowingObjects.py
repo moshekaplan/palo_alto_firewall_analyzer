@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.find_shadowing_objects import find_shadowing_services
-from palo_alto_firewall_analyzer.validators.find_shadowing_objects import find_shadowing_service_groups
 
 
 class TestEquivalentObjects(unittest.TestCase):
@@ -59,7 +58,8 @@ class TestEquivalentObjects(unittest.TestCase):
         dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, [], [])
 
-        results = find_shadowing_services(profilepackage)
+        _, _, validator_function = get_policy_validators()['ShadowingServices']
+        results = validator_function(profilepackage)
 
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
@@ -91,8 +91,8 @@ class TestEquivalentObjects(unittest.TestCase):
 
         profilepackage = self.create_profilepackage([], [], shared_service_groups, dg_service_groups)
 
-        results = find_shadowing_service_groups(profilepackage)
-        print(results)
+        _, _, validator_function = get_policy_validators()['ShadowingServiceGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')

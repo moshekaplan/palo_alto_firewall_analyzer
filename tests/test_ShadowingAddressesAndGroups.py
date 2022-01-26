@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.shadowing_addresses_and_groups import find_shadowing_addresses_and_groups
 
 
 class TestShadowingObjects(unittest.TestCase):
@@ -65,7 +65,8 @@ class TestShadowingObjects(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_shadowing_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
 
     def test_dup_in_shared(self):
@@ -96,7 +97,8 @@ class TestShadowingObjects(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_shadowing_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -134,7 +136,8 @@ class TestShadowingObjects(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_shadowing_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'test_dg')
@@ -181,7 +184,8 @@ class TestShadowingObjects(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_shadowing_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
+        results = validator_function(profilepackage)
 
         self.assertEqual(len(results), 4)
         self.assertEqual(len(results[0].data), 2)
@@ -240,7 +244,8 @@ class TestShadowingObjects(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_shadowing_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
+        results = validator_function(profilepackage)
 
         self.assertEqual(len(results), 2)
         self.assertEqual(len(results[0].data), 2)

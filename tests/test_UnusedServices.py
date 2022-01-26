@@ -2,9 +2,9 @@
 import collections
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.core import get_policy_validators
 
 
 class TestUnusedServices(unittest.TestCase):

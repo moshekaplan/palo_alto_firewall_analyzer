@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.find_equivalent_objects import find_equivalent_addresses
-from palo_alto_firewall_analyzer.validators.find_equivalent_objects import find_equivalent_services
 
 
 class TestEquivalentObjects(unittest.TestCase):
@@ -60,7 +59,8 @@ class TestEquivalentObjects(unittest.TestCase):
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
         dg_addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addresses, [], [])
-        results = find_equivalent_addresses(profilepackage)
+        _, _, validator_function = get_policy_validators()['EquivalentAddresses']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 3)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -93,7 +93,8 @@ class TestEquivalentObjects(unittest.TestCase):
         dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage([], [], shared_services, dg_services)
 
-        results = find_equivalent_services(profilepackage)
+        _, _, validator_function = get_policy_validators()['EquivalentServices']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 3)
         self.assertEqual(results[0].data[0][0], 'shared')

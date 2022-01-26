@@ -2,9 +2,9 @@
 import collections
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.unused_addresses_and_groups import find_unused_addresses
 
 
 class TestUnusedAddressesAndGroups(unittest.TestCase):
@@ -86,7 +86,8 @@ class TestUnusedAddressesAndGroups(unittest.TestCase):
 
         profilepackage = self.create_profilepackage(shared_addresses, shared_addressgroups, shared_securityprerules, shared_natprerules, dg_addresses, dg_securityprerules)
 
-        results = find_unused_addresses(profilepackage)
+        _, _, validator_function = get_policy_validators()['UnusedAddresses']
+        results = validator_function(profilepackage)
 
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 1)

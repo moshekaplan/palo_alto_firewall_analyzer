@@ -2,9 +2,9 @@
 import unittest
 from unittest.mock import patch
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.bad_hostnames import find_badhostname
 
 
 class TestBadHostname(unittest.TestCase):
@@ -69,7 +69,8 @@ class TestBadHostname(unittest.TestCase):
         mocked_dns_lookup.side_effect = ['127.0.0.1', None]
         profilepackage = self.create_profilepackage(addresses, address_groups, rules, ignored_dns_prefixes)
 
-        results = find_badhostname(profilepackage)
+        _, _, validator_function = get_policy_validators()['BadHostname']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
         self.assertEqual(results[0].data.get('name'), 'invalid_fqdn')
         self.assertEqual(results[1].data.get('name'), 'Sample invalid AG')

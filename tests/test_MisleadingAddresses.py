@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.misleading_objects import find_misleading_addresses
 
 
 class TestMisleadingAddresses(unittest.TestCase):
@@ -49,7 +49,8 @@ class TestMisleadingAddresses(unittest.TestCase):
         addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
         profilepackage = self.create_profilepackage(addresses)
 
-        results = find_misleading_addresses(profilepackage)
+        _, _, validator_function = get_policy_validators()['MisleadingAddresses']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
         self.assertEqual(results[0].data.get('name'), 'invalid_ip_127.0.0.2')
         self.assertEqual(results[1].data.get('name'), 'invalid_range_128.0.0.1')

@@ -3,9 +3,9 @@ import collections
 import unittest
 from unittest.mock import patch
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.zone_based_checks import find_extra_rules
 
 
 class TestExtraRules(unittest.TestCase):
@@ -72,7 +72,8 @@ class TestExtraRules(unittest.TestCase):
 
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'src_zone']
-        results = find_extra_rules(profilepackage)
+        _, _, validator_function = get_policy_validators()['ExtraRules']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].data.get('name'), 'same_zone_rule')
 

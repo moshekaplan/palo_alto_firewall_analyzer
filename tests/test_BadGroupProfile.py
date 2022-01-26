@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
+from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.bad_group_profile import find_bad_group_profile_setting
 
 
 class TestBadGroupProfile(unittest.TestCase):
@@ -50,7 +50,8 @@ class TestBadGroupProfile(unittest.TestCase):
         rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(allowed_group_profile, rules)
 
-        results = find_bad_group_profile_setting(profilepackage)
+        _, _, validator_function = get_policy_validators()['BadGroupProfile']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].data.get('name'), 'missing_gp')
         self.assertEqual(results[1].data.get('name'), 'wrong_gp')
