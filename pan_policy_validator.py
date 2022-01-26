@@ -125,7 +125,7 @@ Retrieves PAN FW policy and checks it for various issues."""
     group.add_argument("--all", help="Run validators on all Device Groups", action='store_true')
     group.add_argument("--device-group", help="Device Group to run through validator")
     parser.add_argument("--validator", help="Only run specified validator",
-                        choices=sorted(get_policy_validators().keys()))
+                        choices=sorted(get_policy_validators().keys()), action='append')
     parser.add_argument("--quiet", help="Silence output", action='store_true')
     parser.add_argument("--config", help=f"Config file to read (default is {DEFAULT_CONFIGFILE})", default=DEFAULT_CONFIGFILE)
     parser.add_argument("--profile", help="Config profile to run through validator (defaults to first config entry)")
@@ -151,7 +151,7 @@ Retrieves PAN FW policy and checks it for various issues."""
     validator_config = load_config_file(parsed_args.config, parsed_args.profile)
 
     if parsed_args.validator:
-        validators = {parsed_args.validator: get_policy_validators()[parsed_args.validator]}
+        validators = {validator: get_policy_validators()[validator] for validator in parsed_args.validator}
     else:
         validators = get_policy_validators()
 
@@ -162,7 +162,7 @@ Retrieves PAN FW policy and checks it for various issues."""
         devicegroup_string = ''
 
     if parsed_args.validator:
-        validators_string = "_" + parsed_args.validator
+        validators_string = "_" + "_".join(sorted(parsed_args.validator))
     else:
         validators_string = ''
 
