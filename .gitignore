@@ -4,6 +4,7 @@ pan_analyzer_output_*
 pan_analyzer_debug_*
 pan_fixer_output_*
 pan_fixer_debug_*
+*.xml
 
 # Visual Studio Code temporary files
 .vscode/
