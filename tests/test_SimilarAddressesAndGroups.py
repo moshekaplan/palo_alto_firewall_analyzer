@@ -3,7 +3,7 @@ import unittest
 
 from palo_alto_firewall_analyzer.core import ProfilePackage
 from palo_alto_firewall_analyzer.pan_config import PanConfig
-from palo_alto_firewall_analyzer.validators.similar_addresses_and_groups import find_similar_addresses_and_groups
+from palo_alto_firewall_analyzer.core import get_policy_validators
 
 
 class TestSimilarAddressesAndGroups(unittest.TestCase):
@@ -61,7 +61,8 @@ class TestSimilarAddressesAndGroups(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_similar_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['SimilarAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -102,7 +103,8 @@ class TestSimilarAddressesAndGroups(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_similar_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['SimilarAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -142,7 +144,8 @@ class TestSimilarAddressesAndGroups(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_similar_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['SimilarAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -174,7 +177,8 @@ class TestSimilarAddressesAndGroups(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_similar_addresses_and_groups(profilepackage)
+        _, _, validator_function = get_policy_validators()['SimilarAddressesAndGroups']
+        results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'test_dg')
@@ -185,6 +189,9 @@ class TestSimilarAddressesAndGroups(unittest.TestCase):
         self.assertEqual(results[0].data[1][2].get('name'), 'dg_address_ADDRESSGROUP1')
 
     def test_similar_shared_address_and_dg_addressgroups(self):
+        # SimilarAddressesAndGroups previously detected
+        # duplicates across device groups. This test is
+        # being kept to ensure behavior is as expected.
         test_xml = """\
         <response status="success"><result><config>
           <shared>
@@ -206,15 +213,10 @@ class TestSimilarAddressesAndGroups(unittest.TestCase):
         dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
-        results = find_similar_addresses_and_groups(profilepackage)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(len(results[0].data), 2)
-        self.assertEqual(results[0].data[0][0], 'test_dg')
-        self.assertEqual(results[0].data[0][1], 'Addresses')
-        self.assertEqual(results[0].data[0][2].get('name'), 'shared_address_and_DG_addressgroup')
-        self.assertEqual(results[0].data[1][0], 'shared')
-        self.assertEqual(results[0].data[1][1], 'AddressGroups')
-        self.assertEqual(results[0].data[1][2].get('name'), 'SHARED_address_and_dg_addressgroup')
+        _, _, validator_function = get_policy_validators()['SimilarAddressesAndGroups']
+        results = validator_function(profilepackage)
+        self.assertEqual(len(results), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

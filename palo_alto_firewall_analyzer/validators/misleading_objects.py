@@ -43,13 +43,13 @@ def find_misleading_addresses(profilepackage):
                 # This can optionally include a '/'
                 ip_address = entry_value.split('/', 1)[0]
                 if ip_address not in entry_name and re.search(IP_REGEX, entry_name) is not None:
-                    text = f"Device Group {device_group}'s Address {entry_name} has a misleading value of {entry_value}, because the name appears to contain an IP address, but the IP address is not in the name"
+                    text = f"Device Group {device_group}'s Address {entry_name} appears to contain an IP address in the name, but has a different value of {entry_value}"
                     badentries.append(BadEntry(data=address_entry, text=text, device_group=device_group, entry_type='Addresses'))
             elif entry_type == 'ip-range':
                 # This can optionally include a '-'
                 ip_address = entry_value.split('-', 1)[0]
                 if ip_address not in entry_name and re.search(IP_REGEX, entry_name) is not None:
-                    text = f"Device Group {device_group}'s Address {entry_name} has a misleading value of {entry_value}, because the name appears to contain an IP address, but the IP address is not in the name"
+                    text = f"Device Group {device_group}'s Address {entry_name} appears to contain an IP address in the name, but has a different value of {entry_value}"
                     badentries.append(BadEntry(data=address_entry, text=text, device_group=device_group, entry_type='Addresses'))
     return badentries
 
