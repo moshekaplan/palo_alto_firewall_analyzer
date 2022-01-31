@@ -69,9 +69,9 @@ def find_shadowing_objects(profilepackage, object_type):
             sorted_dgs = sorted(unique_device_groups)
 
             if all_consistent:
-                same_text = "and all are the same"
+                same_text = "and the contents are equivalent"
             else:
-                same_text = "and all are NOT the same"
+                same_text = "and the contents are NOT equivalent"
             data = names_to_dg_obj_from_parent_dgs[overlapping_name] + [[device_group, local_obj]]
             text = f"Device Group {device_group}'s {object_type} '{overlapping_name}' is already present in Device Group {sorted_dgs} {same_text}"
             badentries.append(
