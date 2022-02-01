@@ -9,7 +9,7 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 class TestEquivalentObjects(unittest.TestCase):
     @staticmethod
     def create_profilepackage(shared_addresses, dg_addresses, shared_services, dg_services):
-        device_groups = ["test_dg"]
+        device_groups = ["shared", "test_dg"]
         device_group_hierarchy_parent = {"test_dg": "shared"}
         devicegroup_objects = {"shared": {}, "test_dg": {}}
         devicegroup_objects["shared"]['Addresses'] = shared_addresses
@@ -43,6 +43,8 @@ class TestEquivalentObjects(unittest.TestCase):
           <shared>
             <address>
               <entry name="unique_netmask"><ip-netmask>ignored.tld</ip-netmask></entry>
+              <entry name="dupe_netmask1"><ip-netmask>127.0.0.1</ip-netmask></entry>
+              <entry name="dupe_netmask2"><ip-netmask>127.0.0.1/32</ip-netmask></entry>
               <entry name="dup_fqdn1"><fqdn>dupfqdn.tld</fqdn></entry>
               <entry name="dup_fqdn2"><fqdn>dupfqdn.tld</fqdn></entry>
             </address>
@@ -61,14 +63,25 @@ class TestEquivalentObjects(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, dg_addresses, [], [])
         _, _, validator_function = get_policy_validators()['EquivalentAddresses']
         results = validator_function(profilepackage)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(len(results[0].data), 3)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1].get('name'), 'dup_fqdn1')
         self.assertEqual(results[0].data[1][0], 'shared')
         self.assertEqual(results[0].data[1][1].get('name'), 'dup_fqdn2')
-        self.assertEqual(results[0].data[2][0], 'test_dg')
-        self.assertEqual(results[0].data[2][1].get('name'), 'dup_fqdn3')
+        self.assertEqual(len(results[1].data), 2)
+        self.assertEqual(results[1].data[0][0], 'shared')
+        self.assertEqual(results[1].data[0][1].get('name'), 'dupe_netmask1')
+        self.assertEqual(results[1].data[1][0], 'shared')
+        self.assertEqual(results[1].data[1][1].get('name'), 'dupe_netmask2')
+        self.assertEqual(len(results[2].data), 3)
+        self.assertEqual(results[2].data[0][0], 'shared')
+        self.assertEqual(results[2].data[0][1].get('name'), 'dup_fqdn1')
+        self.assertEqual(results[2].data[1][0], 'shared')
+        self.assertEqual(results[2].data[1][1].get('name'), 'dup_fqdn2')
+        self.assertEqual(results[2].data[2][0], 'test_dg')
+        self.assertEqual(results[2].data[2][1].get('name'), 'dup_fqdn3')
+
 
     def test_equivalent_services(self):
         test_xml = """\
@@ -95,14 +108,19 @@ class TestEquivalentObjects(unittest.TestCase):
 
         _, _, validator_function = get_policy_validators()['EquivalentServices']
         results = validator_function(profilepackage)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(len(results[0].data), 3)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1].get('name'), 'tcp-dup1')
         self.assertEqual(results[0].data[1][0], 'shared')
         self.assertEqual(results[0].data[1][1].get('name'), 'tcp-dup2')
-        self.assertEqual(results[0].data[2][0], 'test_dg')
-        self.assertEqual(results[0].data[2][1].get('name'), 'tcp-dup3')
+        self.assertEqual(len(results[1].data), 3)
+        self.assertEqual(results[1].data[0][0], 'shared')
+        self.assertEqual(results[1].data[0][1].get('name'), 'tcp-dup1')
+        self.assertEqual(results[1].data[1][0], 'shared')
+        self.assertEqual(results[1].data[1][1].get('name'), 'tcp-dup2')
+        self.assertEqual(results[1].data[2][0], 'test_dg')
+        self.assertEqual(results[1].data[2][1].get('name'), 'tcp-dup3')
 
 
 if __name__ == "__main__":

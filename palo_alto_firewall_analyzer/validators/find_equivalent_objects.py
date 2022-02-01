@@ -7,6 +7,11 @@ import xmltodict
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+def normalize_address(addr_dict):
+    # Append /32 to IPv4 addresses
+    if 'ip-netmask' in addr_dict['entry'] and '.' in addr_dict['entry']['ip-netmask'] and '/' not in addr_dict['entry']['ip-netmask']:
+        addr_dict['entry']['ip-netmask'] += "/32"
+    return addr_dict
 
 @functools.lru_cache(maxsize=None)
 def normalize_object(obj, object_type):
@@ -22,6 +27,9 @@ def normalize_object(obj, object_type):
 
     # Specifically don't look at the name, or every object would be unique
     del normalized_dict['entry']['@name']
+
+    if object_type == 'Addresses':
+        normalized_dict = normalize_address(normalized_dict)
 
     return json.dumps(normalized_dict, sort_keys=True)
 
