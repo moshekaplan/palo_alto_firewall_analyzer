@@ -8,8 +8,9 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 class TestBadGroupProfile(unittest.TestCase):
     @staticmethod
-    def create_profilepackage(allowed_group_profile, rules):
+    def create_profilepackage(allowed_group_profile: list[str], pan_config: PanConfig) -> ProfilePackage:
         device_groups = ['test_dg']
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
         devicegroup_exclusive_objects = {'test_dg': {'SecurityPreRules': rules, 'SecurityPostRules': []}}
 
         profilepackage = ProfilePackage(
@@ -47,8 +48,7 @@ class TestBadGroupProfile(unittest.TestCase):
         """
         allowed_group_profile = ['correct']
         pan_config = PanConfig(test_xml)
-        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
-        profilepackage = self.create_profilepackage(allowed_group_profile, rules)
+        profilepackage = self.create_profilepackage(allowed_group_profile, pan_config)
 
         _, _, validator_function = get_policy_validators()['BadGroupProfile']
         results = validator_function(profilepackage)
