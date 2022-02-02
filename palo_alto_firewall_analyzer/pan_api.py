@@ -272,7 +272,7 @@ SUPPORTED_OBJECT_TYPES = (
     # "DoSProtectionSecurityProfiles",
     # "GTPProtectionSecurityProfiles",
     # "SCTPProtectionSecurityProfiles",
-    # "SecurityProfileGroups",
+    "SecurityProfileGroups",
     # "LogForwardingProfiles",
     # "AuthenticationEnforcements",
     # "DecryptionProfiles",

@@ -111,7 +111,7 @@ class PanConfig:
         # "DoSProtectionSecurityProfiles",
         # "GTPProtectionSecurityProfiles",
         # "SCTPProtectionSecurityProfiles",
-        # "SecurityProfileGroups",
+        "SecurityProfileGroups": "profile-group/",
         "LogForwardingProfiles": "log-settings/",
         # "AuthenticationEnforcements",
         # "DecryptionProfiles",
