@@ -13,6 +13,22 @@ def normalize_address(addr_dict):
         addr_dict['entry']['ip-netmask'] += "/32"
     return addr_dict
 
+def normalize_addressgroup(addr_dict):
+    # Sort the members of static address group objects
+    if 'static' in addr_dict['entry']:
+        addr_dict['entry']['static']['member'] = sorted(addr_dict['entry']['static']['member'])
+    return addr_dict
+
+def normalize_servicegroup(addr_dict):
+    # Sort the members of service group objects
+    addr_dict['entry']['members']['member'] = sorted(addr_dict['entry']['members']['member'])
+    return addr_dict
+
+NORMALIZATION_FUNCTIONS = {'Addresses': normalize_address,
+                           'AddressGroups': normalize_addressgroup,
+                           'ServiceGroups': normalize_servicegroup,
+                           }
+
 @functools.lru_cache(maxsize=None)
 def normalize_object(obj, object_type):
     """Turn an XML-based object into a
@@ -28,8 +44,8 @@ def normalize_object(obj, object_type):
     # Specifically don't look at the name, or every object would be unique
     del normalized_dict['entry']['@name']
 
-    if object_type == 'Addresses':
-        normalized_dict = normalize_address(normalized_dict)
+    if object_type in NORMALIZATION_FUNCTIONS:
+        normalized_dict = NORMALIZATION_FUNCTIONS[object_type](normalized_dict)
 
     return json.dumps(normalized_dict, sort_keys=True)
 
@@ -87,7 +103,14 @@ def find_equivalent_objects(profilepackage, object_type):
 def find_equivalent_addresses(profilepackage):
     return find_equivalent_objects(profilepackage, "Addresses")
 
+@register_policy_validator("EquivalentAddressGroups", "Address Group objects that are equivalent with each other")
+def find_equivalent_addresses(profilepackage):
+    return find_equivalent_objects(profilepackage, "AddressGroups")
 
 @register_policy_validator("EquivalentServices", "Service objects that are equivalent with each other")
 def find_equivalent_services(profilepackage):
     return find_equivalent_objects(profilepackage, "Services")
+
+@register_policy_validator("EquivalentServiceGroups", "Service Group objects that are equivalent with each other")
+def find_equivalent_addresses(profilepackage):
+    return find_equivalent_objects(profilepackage, "ServiceGroups")

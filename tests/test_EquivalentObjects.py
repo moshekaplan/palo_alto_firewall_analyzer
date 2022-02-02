@@ -8,14 +8,12 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 class TestEquivalentObjects(unittest.TestCase):
     @staticmethod
-    def create_profilepackage(shared_addresses, dg_addresses, shared_services, dg_services):
+    def create_profilepackage(object_type, shared_objects, dg_objects):
         device_groups = ["shared", "test_dg"]
         device_group_hierarchy_parent = {"test_dg": "shared"}
         devicegroup_objects = {"shared": {}, "test_dg": {}}
-        devicegroup_objects["shared"]['Addresses'] = shared_addresses
-        devicegroup_objects["test_dg"]['Addresses'] = dg_addresses
-        devicegroup_objects["shared"]['Services'] = shared_services
-        devicegroup_objects["test_dg"]['Services'] = dg_services
+        devicegroup_objects["shared"][object_type] = shared_objects
+        devicegroup_objects["test_dg"][object_type] = dg_objects
 
         profilepackage = ProfilePackage(
             panorama='',
@@ -60,7 +58,7 @@ class TestEquivalentObjects(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
         dg_addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
-        profilepackage = self.create_profilepackage(shared_addresses, dg_addresses, [], [])
+        profilepackage = self.create_profilepackage('Addresses', shared_addresses, dg_addresses)
         _, _, validator_function = get_policy_validators()['EquivalentAddresses']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
@@ -82,6 +80,33 @@ class TestEquivalentObjects(unittest.TestCase):
         self.assertEqual(results[2].data[2][0], 'test_dg')
         self.assertEqual(results[2].data[2][1].get('name'), 'dup_fqdn3')
 
+    def test_equivalent_addressgroups(self):
+        test_xml = """\
+        <response status="success"><result><config>
+          <shared>
+            <address>
+              <entry name="unique_netmask1"><ip-netmask>127.0.0.2/32</ip-netmask></entry>
+              <entry name="unique_netmask2"><ip-netmask>127.0.0.1/32</ip-netmask></entry>
+            </address>
+            <address-group>
+              <entry name="address_group1"><static><member>unique_netmask1</member><member>unique_netmask2</member></static></entry>
+              <entry name="address_group2"><static><member>unique_netmask2</member><member>unique_netmask1</member></static></entry>
+            </address-group>
+          </shared>
+        </config></result></response>
+        """
+        pan_config = PanConfig(test_xml)
+        shared_addresses = pan_config.get_devicegroup_object('AddressGroups', 'shared')
+        dg_addresses = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        profilepackage = self.create_profilepackage('AddressGroups', shared_addresses, dg_addresses)
+        _, _, validator_function = get_policy_validators()['EquivalentAddressGroups']
+        results = validator_function(profilepackage)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0].data), 2)
+        self.assertEqual(results[0].data[0][0], 'shared')
+        self.assertEqual(results[0].data[0][1].get('name'), 'address_group1')
+        self.assertEqual(results[0].data[1][0], 'shared')
+        self.assertEqual(results[0].data[1][1].get('name'), 'address_group2')
 
     def test_equivalent_services(self):
         test_xml = """\
@@ -104,7 +129,7 @@ class TestEquivalentObjects(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
         dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
-        profilepackage = self.create_profilepackage([], [], shared_services, dg_services)
+        profilepackage = self.create_profilepackage('Services', shared_services, dg_services)
 
         _, _, validator_function = get_policy_validators()['EquivalentServices']
         results = validator_function(profilepackage)
@@ -121,6 +146,35 @@ class TestEquivalentObjects(unittest.TestCase):
         self.assertEqual(results[1].data[1][1].get('name'), 'tcp-dup2')
         self.assertEqual(results[1].data[2][0], 'test_dg')
         self.assertEqual(results[1].data[2][1].get('name'), 'tcp-dup3')
+
+    def test_equivalent_servicegroups(self):
+        test_xml = """\
+        <response status="success"><result><config>
+          <shared>
+            <service>
+              <entry name="tcp-1"><protocol><tcp><port>1</port><override><no/></override></tcp></protocol></entry>
+              <entry name="tcp-2"><protocol><tcp><port>2</port><override><no/></override></tcp></protocol></entry>
+            </service>
+            <service-group>
+              <entry name="dup1"><members><member>tcp-1</member><member>tcp-2</member></members></entry>
+              <entry name="dup2"><members><member>tcp-2</member><member>tcp-1</member></members></entry>
+            </service-group>
+          </shared>
+        </config></result></response>
+        """
+        pan_config = PanConfig(test_xml)
+        shared_services = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
+        dg_services = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        profilepackage = self.create_profilepackage('ServiceGroups', shared_services, dg_services)
+
+        _, _, validator_function = get_policy_validators()['EquivalentServiceGroups']
+        results = validator_function(profilepackage)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0].data), 2)
+        self.assertEqual(results[0].data[0][0], 'shared')
+        self.assertEqual(results[0].data[0][1].get('name'), 'dup1')
+        self.assertEqual(results[0].data[1][0], 'shared')
+        self.assertEqual(results[0].data[1][1].get('name'), 'dup2')
 
 
 if __name__ == "__main__":
