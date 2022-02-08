@@ -215,6 +215,9 @@ def find_extra_zones(profilepackage):
 
                 # Analyze each rule for extra zones
                 for members, zones, zonetype in [(src_members, src_zones, 'Source'), (dest_members, dest_zones, 'Dest')]:
+                    # If the rule allows 'any' source address, it's a zone-based rule, not an address-based one
+                    if 'any' in members:
+                        continue
                     calculated_zones_to_members = collections.defaultdict(list)
                     missing_any = False
                     for member in members:
