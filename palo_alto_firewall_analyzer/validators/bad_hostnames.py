@@ -1,11 +1,10 @@
-from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_lookup, register_policy_validator
+from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_lookup, register_policy_validator, get_policy_validators
 
 
 @register_policy_validator("BadHostname", "Address contains a hostname that doesn't resolve")
 def find_badhostname(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
-    devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
     ignored_dns_prefixes = [dns_prefix.lower() for dns_prefix in profilepackage.ignored_dns_prefixes]
 
     badentries = []
@@ -28,7 +27,22 @@ def find_badhostname(profilepackage):
                     text = f"Device Group {device_group}'s address '{entry_name}' uses the following FQDN which doesn't resolve: '{fqdn_text}'"
                     badentries.append(
                         BadEntry(data=entry, text=text, device_group=device_group, entry_type='Addresses'))
+    return badentries
 
+@register_policy_validator("BadHostnameUsage", "AddresGroups and Security Rules using Address objects which don't resolve")
+def find_badhostnameusage(profilepackage):
+    device_groups = profilepackage.device_groups
+    devicegroup_objects = profilepackage.devicegroup_objects
+    devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
+
+    _, _, validator_function = get_policy_validators()['BadHostname']
+
+    bad_hostname_results = validator_function(profilepackage)
+    bad_address_objects = set()
+    for entry in bad_hostname_results:
+        bad_address_objects.add(entry.data.get('name'))
+
+    badentries = []
     for i, device_group in enumerate(device_groups):
         print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Address Groups")
         for entry in devicegroup_objects[device_group]['AddressGroups']:
