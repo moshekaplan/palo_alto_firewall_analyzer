@@ -231,6 +231,10 @@ def find_extra_zones(profilepackage):
                                 calculated_zones_to_members[member_zone].append(member)
                         if missing_any:
                             break
+                    # We need a complete list of calculated zones to determine if
+                    # any zones present are extra
+                    if missing_any:
+                        continue
 
                     extra_zones = sorted(set(zones) - set(calculated_zones_to_members))
                     if extra_zones:

@@ -85,24 +85,16 @@ class TestExtraZones(unittest.TestCase):
           <devices><entry><device-group><entry name="test_dg">
             <pre-rulebase><security><rules>
               <entry name="extra_zone_rule">
-                <from>
-                  <member>src_zone</member>
-                </from>
+                <from><member>src_zone</member></from>
                 <to>
                   <member>dest_zone</member>
                   <member>dest_zone_extra</member>
                 </to>
-                <source>
-                  <member>127.0.0.2</member>
-                </source>
-                <destination>
-                  <member>ip-127.0.0.3</member>
-                </destination>
+                <source><member>127.0.0.2</member></source>
+                <destination><member>ip-127.0.0.3</member></destination>
               </entry>
             </rules></security></pre-rulebase>
-            <address>
-              <entry name="ip-127.0.0.3"><ip-netmask>127.0.0.3</ip-netmask></entry>
-            </address>
+            <address><entry name="ip-127.0.0.3"><ip-netmask>127.0.0.3</ip-netmask></entry></address>
           </entry></device-group></entry></devices>
         </config></result></response>
         """
@@ -133,6 +125,35 @@ class TestExtraZones(unittest.TestCase):
                 <disabled>no</disabled>
               </entry>
             </rules></security></pre-rulebase>
+          </entry></device-group></entry></devices>
+        </config></result></response>
+        """
+        pan_config = PanConfig(test_xml)
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
+        addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        profilepackage = self.create_profilepackage(rules, addresses)
+        get_firewall_zone.side_effect = ['src_zone', 'dest_zone']
+        _, _, validator_function = get_policy_validators()['ExtraZones']
+        results = validator_function(profilepackage)
+        self.assertEqual(len(results), 0)
+
+
+    @patch('palo_alto_firewall_analyzer.validators.zone_based_checks.get_firewall_zone')
+    def test_with_extrazone_missing(self, get_firewall_zone):
+        test_xml = """\
+        <response status="success"><result><config>
+          <devices><entry><device-group><entry name="test_dg">
+            <pre-rulebase><security><rules>
+              <entry name="rule_1">
+                <to><member>zone_a</member></to>
+                <from><member>zone_b</member></from>
+                <source><member>net-127.0.0.3/24</member></source>
+                <destination><member>any</member></destination>
+                <service><member>tcp-1</member></service>
+                <disabled>no</disabled>
+              </entry>
+            </rules></security></pre-rulebase>
+            <address><entry name="net-127.0.0.3/24"><ip-netmask>127.0.0.3/24</ip-netmask></entry></address>
           </entry></device-group></entry></devices>
         </config></result></response>
         """
