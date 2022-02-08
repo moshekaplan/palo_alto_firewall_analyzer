@@ -122,29 +122,33 @@ class PanConfig:
     }
 
     @functools.lru_cache(maxsize=None)
-    def get_devicegroup_policy(self, policytype, locationtype, device_group=None):
-        if locationtype not in self.SUPPORTED_LOCATION_TYPES:
+    def get_devicegroup_policy(self, policy_type, device_group):
+        if policy_type not in self.SUPPORTED_POLICY_TYPES:
             raise Exception(
-                f"Unsupported locationtype of {locationtype}! locationtype must be one of {self.SUPPORTED_LOCATION_TYPES.keys()}")
+                f"Invalid policy_type '{policy_type}' ! policy_type must be one of {self.SUPPORTED_POLICY_TYPES.keys()}")
 
-        if policytype not in self.SUPPORTED_POLICY_TYPES:
-            raise Exception(
-                f"Invalid policytype '{policytype}' ! policytype must be one of {self.SUPPORTED_POLICY_TYPES.keys()}")
-
-        xpath_location_prefix = self.SUPPORTED_LOCATION_TYPES[locationtype].format(device_group=device_group)
-        xpath = xpath_location_prefix + self.SUPPORTED_POLICY_TYPES[policytype]
+        # 'shared' is a reserved name by PA and not allowed to be used as a device group name
+        if device_group == 'shared':
+            location_type = 'shared'
+        else:
+            location_type = 'device-group'
+        assert location_type in self.SUPPORTED_LOCATION_TYPES
+        xpath_location_prefix = self.SUPPORTED_LOCATION_TYPES[location_type].format(device_group=device_group)
+        xpath = xpath_location_prefix + self.SUPPORTED_POLICY_TYPES[policy_type]
         return self.configroot.findall(xpath)
 
     @functools.lru_cache(maxsize=None)
-    def get_devicegroup_object(self, object_type, location_type, device_group=None):
-        if location_type not in self.SUPPORTED_LOCATION_TYPES:
-            raise Exception(
-                f"Unsupported locationtype of {location_type}! locationtype must be one of {self.SUPPORTED_LOCATION_TYPES.keys()}")
-
+    def get_devicegroup_object(self, object_type, device_group):
         if object_type not in self.SUPPORTED_OBJECT_TYPES:
             raise Exception(
-                f"Invalid policytype '{object_type}' ! object_type must be one of {self.SUPPORTED_OBJECT_TYPES.keys()}")
+                f"Invalid object_type '{object_type}' ! object_type must be one of {self.SUPPORTED_OBJECT_TYPES.keys()}")
 
+        # 'shared' is a reserved name by PA and not allowed to be used as a device group name
+        if device_group == 'shared':
+            location_type = 'shared'
+        else:
+            location_type = 'device-group'
+        assert location_type in self.SUPPORTED_LOCATION_TYPES
         xpath_location_prefix = self.SUPPORTED_LOCATION_TYPES[location_type].format(device_group=device_group)
         xpath = xpath_location_prefix + self.SUPPORTED_OBJECT_TYPES[object_type]
         return self.configroot.findall(xpath)
@@ -167,7 +171,7 @@ def main():
     print(pc.get_device_groups_hierarchy())
 
     for dg in device_groups + ['shared']:
-        print(dg, pc.get_devicegroup_policy('SecurityPreRules', 'device-group', dg))
+        print(dg, pc.get_devicegroup_policy('SecurityPreRules', dg))
 
     print ("Address Groups")
     print(dg, pc.get_devicegroup_object('AddressGroups', 'shared'))

@@ -26,10 +26,7 @@ def find_unused_security_profile_groups(profilepackage, object_type, object_frie
         groups_in_use = set()
         for child_dg in devicegroup_objects[device_group]['all_child_device_groups']:
             for policytype in ["SecurityPreRules", "SecurityPostRules"]:
-                if child_dg == 'shared':
-                    security_rules = pan_config.get_devicegroup_policy(policytype, 'shared')
-                else:
-                    security_rules = pan_config.get_devicegroup_policy(policytype, 'device-group', child_dg)
+                security_rules = pan_config.get_devicegroup_policy(policytype, child_dg)
                 for policy_entry in security_rules:
                     for service_child_element in policy_entry.findall('profile-setting/group/member'):
                         groups_in_use.add(service_child_element.text)

@@ -81,8 +81,8 @@ class TestUnusedAddressesAndGroups(unittest.TestCase):
         shared_addressgroups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
         shared_securityprerules = pan_config.get_devicegroup_policy('SecurityPreRules', 'shared')
         shared_natprerules = pan_config.get_devicegroup_policy('NATPreRules', 'shared')
-        dg_addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
-        dg_securityprerules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
+        dg_addresses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
+        dg_securityprerules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
 
         profilepackage = self.create_profilepackage(shared_addresses, shared_addressgroups, shared_securityprerules, shared_natprerules, dg_addresses, dg_securityprerules)
 

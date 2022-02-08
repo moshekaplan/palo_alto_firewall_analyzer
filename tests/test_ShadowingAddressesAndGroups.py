@@ -60,9 +60,9 @@ class TestShadowingObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
         shared_addressgroups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
@@ -92,9 +92,9 @@ class TestShadowingObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
         shared_addressgroups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
@@ -131,9 +131,9 @@ class TestShadowingObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
         shared_addressgroups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
@@ -179,9 +179,9 @@ class TestShadowingObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
         shared_addressgroups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
@@ -239,9 +239,9 @@ class TestShadowingObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        dg_addesses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
         shared_addressgroups = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        dg_addessgroups = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']

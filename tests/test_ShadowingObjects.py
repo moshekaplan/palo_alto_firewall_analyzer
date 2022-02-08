@@ -55,7 +55,7 @@ class TestEquivalentObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, [], [])
 
         _, _, validator_function = get_policy_validators()['ShadowingServices']
@@ -87,7 +87,7 @@ class TestEquivalentObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_service_groups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_service_groups = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_service_groups = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
 
         profilepackage = self.create_profilepackage([], [], shared_service_groups, dg_service_groups)
 

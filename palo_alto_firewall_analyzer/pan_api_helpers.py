@@ -77,7 +77,7 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api, x
         else:
             for policy_type in pan_config.SUPPORTED_POLICY_TYPES:
                 devicegroup_objects[device_group][policy_type] = \
-                    pan_config.get_devicegroup_policy(policy_type, 'device-group', device_group)[:limit]
+                    pan_config.get_devicegroup_policy(policy_type, device_group)[:limit]
             for object_type in pan_config.SUPPORTED_OBJECT_TYPES:
                 devicegroup_objects[device_group][object_type] = \
                     pan_config.get_devicegroup_object(object_type, 'device-group', device_group)

@@ -77,9 +77,9 @@ class TestUnusedServices(unittest.TestCase):
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
         shared_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
         shared_securityprerules = pan_config.get_devicegroup_policy('SecurityPreRules', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
-        dg_securityprerules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
-        dg_natrules = pan_config.get_devicegroup_policy('NATPreRules', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
+        dg_securityprerules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
+        dg_natrules = pan_config.get_devicegroup_policy('NATPreRules', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, shared_servicegroups, shared_securityprerules, dg_services, dg_securityprerules, dg_natrules)
 
         _, _, find_unused_services = get_policy_validators()['UnusedServices']

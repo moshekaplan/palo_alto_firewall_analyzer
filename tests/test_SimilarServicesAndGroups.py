@@ -54,9 +54,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         shared_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
@@ -96,9 +96,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         shared_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
@@ -137,9 +137,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         shared_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
@@ -170,9 +170,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         shared_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
@@ -206,9 +206,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         shared_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_servicegroups = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']

@@ -69,8 +69,8 @@ class TestMissingZones(unittest.TestCase):
         </config></result></response>
         """
         pan_config = PanConfig(test_xml)
-        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
-        addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
+        addresses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
 
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'dest_zone', "missing_zone"]

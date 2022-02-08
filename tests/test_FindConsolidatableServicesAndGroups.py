@@ -15,10 +15,10 @@ class TestFindConsolidatableServicesAndGroups(unittest.TestCase):
         devicegroup_objects = {"shared": collections.defaultdict(list), "test_dg": collections.defaultdict(list)}
         devicegroup_objects['shared']['all_child_device_groups'] = ["shared", "test_dg"]
         devicegroup_objects["shared"]['Services'] = pan_config.get_devicegroup_object('Services', 'shared')
-        devicegroup_objects["test_dg"]['Services'] = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        devicegroup_objects["test_dg"]['Services'] = pan_config.get_devicegroup_object('Services', 'test_dg')
         devicegroup_objects["shared"]['ServiceGroups'] = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        devicegroup_objects["test_dg"]['ServiceGroups'] = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
-        devicegroup_objects["test_dg"]['SecurityPreRules'] = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
+        devicegroup_objects["test_dg"]['ServiceGroups'] = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
+        devicegroup_objects["test_dg"]['SecurityPreRules'] = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
 
         profilepackage = ProfilePackage(
             panorama='',

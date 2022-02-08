@@ -57,7 +57,7 @@ class TestEquivalentObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addresses = pan_config.get_devicegroup_object('Addresses', 'device-group', 'test_dg')
+        dg_addresses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
         profilepackage = self.create_profilepackage('Addresses', shared_addresses, dg_addresses)
         _, _, validator_function = get_policy_validators()['EquivalentAddresses']
         results = validator_function(profilepackage)
@@ -97,7 +97,7 @@ class TestEquivalentObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_addresses = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addresses = pan_config.get_devicegroup_object('AddressGroups', 'device-group', 'test_dg')
+        dg_addresses = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
         profilepackage = self.create_profilepackage('AddressGroups', shared_addresses, dg_addresses)
         _, _, validator_function = get_policy_validators()['EquivalentAddressGroups']
         results = validator_function(profilepackage)
@@ -128,7 +128,7 @@ class TestEquivalentObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
         profilepackage = self.create_profilepackage('Services', shared_services, dg_services)
 
         _, _, validator_function = get_policy_validators()['EquivalentServices']
@@ -164,7 +164,7 @@ class TestEquivalentObjects(unittest.TestCase):
         """
         pan_config = PanConfig(test_xml)
         shared_services = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_services = pan_config.get_devicegroup_object('ServiceGroups', 'device-group', 'test_dg')
+        dg_services = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
         profilepackage = self.create_profilepackage('ServiceGroups', shared_services, dg_services)
 
         _, _, validator_function = get_policy_validators()['EquivalentServiceGroups']

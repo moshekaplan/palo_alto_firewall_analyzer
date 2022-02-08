@@ -47,7 +47,7 @@ class TestBadLogSetting(unittest.TestCase):
         """
         mandated_log_profile = 'correct'
         pan_config = PanConfig(test_xml)
-        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
         profilepackage = self.create_profilepackage(mandated_log_profile, rules)
 
         _, _, validator_function = get_policy_validators()['BadLogSetting']
@@ -71,7 +71,7 @@ class TestBadLogSetting(unittest.TestCase):
         """
         mandated_log_profile = None
         pan_config = PanConfig(test_xml)
-        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'device-group', 'test_dg')
+        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
         profilepackage = self.create_profilepackage(mandated_log_profile, rules)
         _, _, validator_function = get_policy_validators()['BadLogSetting']
         results = validator_function(profilepackage)
