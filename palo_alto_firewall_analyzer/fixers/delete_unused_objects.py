@@ -22,10 +22,7 @@ def delete_unused_object(profilepackage, object_type, object_friendly_type, vali
             object_name = badentry.data[0].get('name')
             print(f"Deleting {object_name} from {device_group}")
             try:
-                if device_group == 'shared':
-                    pan_api.delete_object(panorama, version, api_key, object_type, object_name, 'shared')
-                else:
-                    pan_api.delete_object(panorama, version, api_key, object_type, object_name, 'device-group', device_group)
+                pan_api.delete_object(panorama, version, api_key, object_type, object_name, device_group)
             except requests.HTTPError as err:
                 print(f"Error deleting {object_name} from {device_group}: {err.response.text}")
         pan_api.validate_commit(panorama, api_key)

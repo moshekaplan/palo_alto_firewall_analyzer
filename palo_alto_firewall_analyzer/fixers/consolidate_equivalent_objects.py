@@ -27,15 +27,9 @@ def consolidate_service_like_objects(profilepackage, object_friendly_type, valid
         object_policy_type = badentry.entry_type
 
         if object_policy_type in pan_config.SUPPORTED_OBJECT_TYPES:
-            if object_policy_dg == 'shared':
-                pan_api.update_devicegroup_object(panorama, version, api_key, object_policy_dict, object_policy_type, 'shared')
-            else:
-                pan_api.update_devicegroup_object(panorama, version, api_key, object_policy_dict, object_policy_type, 'device-group', object_policy_dg)
+            pan_api.update_devicegroup_object(panorama, version, api_key, object_policy_dict, object_policy_type, object_policy_dg)
         elif object_policy_type in pan_config.SUPPORTED_POLICY_TYPES:
-            if object_policy_dg == 'shared':
-                pan_api.update_devicegroup_policy(panorama, version, api_key, object_policy_dict, object_policy_type, 'shared')
-            else:
-                pan_api.update_devicegroup_policy(panorama, version, api_key, object_policy_dict, object_policy_type, 'device-group', object_policy_dg)
+            pan_api.update_devicegroup_policy(panorama, version, api_key, object_policy_dict, object_policy_type, object_policy_dg)
     pan_api.validate_commit(panorama, api_key)
     print (f"Replacement complete. Please commit in the firewall.")
     return badentries_needing_consolidation

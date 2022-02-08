@@ -21,10 +21,7 @@ def delete_disabled_policies(profilepackage):
 
             print(f"Deleting Device Group {device_group}'s {policy_type} {policy_name}")
             try:
-                if device_group == 'shared':
-                    pan_api.delete_policy(panorama, version, api_key, policy_type, policy_name, 'shared')
-                else:
-                    pan_api.delete_policy(panorama, version, api_key, policy_type, policy_name, 'device-group', device_group)
+                pan_api.delete_policy(panorama, version, api_key, policy_type, policy_name, device_group)
             except requests.HTTPError as err:
                 print(f"Error deleting {device_group}'s {policy_type} {policy_name}: {err.response.text}")
         pan_api.validate_commit(panorama, api_key)
