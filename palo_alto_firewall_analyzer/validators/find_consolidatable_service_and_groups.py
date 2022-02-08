@@ -79,9 +79,7 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
 
 def consolidate_service_like_objects(profilepackage, object_type, object_friendly_type, validator_function):
     panorama = profilepackage.panorama
-    api_key = profilepackage.api_key
     pan_config = profilepackage.pan_config
-    version = pan_config.get_major_version()
     devicegroup_objects = profilepackage.devicegroup_objects
 
     print ("*"*80)
@@ -162,18 +160,17 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
                 object_policy_dict['service']['member'] = new_services
             text = f"Replace the following Service members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
             badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
-
     return badentries
 
 @register_policy_validator("FindConsolidatableServices", "Consolidate use of equivalent Service objects so only one object is used")
-def delete_unused_services(profilepackage):
+def find_consolidatable_services(profilepackage):
     object_type = "Services"
     object_friendly_type = "Service"
     _, _, validator_function = get_policy_validators()['EquivalentServices']
     return consolidate_service_like_objects(profilepackage, object_type, object_friendly_type, validator_function)
 
 @register_policy_validator("FindConsolidatableServiceGroups", "Consolidate use of equivalent ServiceGroup objects so only one object is used")
-def delete_unused_servicesgroups(profilepackage):
+def find_consolidatable_servicesgroups(profilepackage):
     object_type = "ServiceGroups"
     object_friendly_type = "Service Group"
     _, _, validator_function = get_policy_validators()['EquivalentServiceGroups']

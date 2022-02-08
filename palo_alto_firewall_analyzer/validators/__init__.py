@@ -2,7 +2,7 @@ from . import bad_group_profile
 from . import bad_hostnames
 from . import bad_log_setting
 from . import find_disabled_policies
-from . import find_consolidatable_objects
+from . import find_consolidatable_service_and_groups
 from . import find_equivalent_objects
 from . import find_shadowing_objects
 from . import misleading_objects
