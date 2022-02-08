@@ -29,7 +29,7 @@ def find_badhostname(profilepackage):
                         BadEntry(data=entry, text=text, device_group=device_group, entry_type='Addresses'))
     return badentries
 
-@register_policy_validator("BadHostnameUsage", "AddresGroups and Security Rules using Address objects which don't resolve")
+@register_policy_validator("BadHostnameUsage", "AddressGroups and Security Rules using Address objects which don't resolve")
 def find_badhostnameusage(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
