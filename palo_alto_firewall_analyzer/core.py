@@ -77,24 +77,6 @@ def cached_dns_lookup(domain):
         return None
 
 
-def get_single_ip_from_address(address_entry):
-    """
-    address_entry: Address object
-    Return: An ip address that is inside of the Address Object.
-    """
-    if "ip-netmask" in address_entry:
-        return ipaddress.ip_network(address_entry['ip-netmask'], False)[0].exploded
-    elif 'ip-range' in address_entry:
-        return address_entry['ip-range'].split('-', 1)[0]
-    elif 'fqdn' in address_entry:
-        ip = cached_dns_lookup(address_entry['fqdn'])
-        if ip:
-            return ip
-    else:
-        # wildcard masks aren't supported yet
-        raise Exception(f"Unable to extract an ip from {address_entry}")
-
-
 @functools.lru_cache(maxsize=None)
 def xml_object_to_dict(xml_obj):
     obj_xml_string = xml.etree.ElementTree.tostring(xml_obj)
