@@ -53,7 +53,7 @@ def find_unused_services(profilepackage):
     return badentries
 
 @register_policy_validator("UnusedServiceGroups", "Service Group objects that aren't in use")
-def find_unused_services(profilepackage):
+def find_unused_servicegroups(profilepackage):
     object_type = "ServiceGroups"
     object_friendly_type = "Service Groups"
     badentries = find_unused_service_like_object(profilepackage, object_type, object_friendly_type)

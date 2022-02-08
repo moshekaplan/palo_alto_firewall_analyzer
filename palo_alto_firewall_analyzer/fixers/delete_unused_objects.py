@@ -1,4 +1,4 @@
-from palo_alto_firewall_analyzer.core import BadEntry, register_policy_fixer, get_policy_validators, get_policy_fixers
+from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_validators
 
 from palo_alto_firewall_analyzer import pan_api
 

@@ -78,7 +78,6 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
 
 
 def consolidate_service_like_objects(profilepackage, object_type, object_friendly_type, validator_function):
-    panorama = profilepackage.panorama
     pan_config = profilepackage.pan_config
     devicegroup_objects = profilepackage.devicegroup_objects
 

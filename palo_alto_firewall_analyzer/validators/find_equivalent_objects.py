@@ -104,7 +104,7 @@ def find_equivalent_addresses(profilepackage):
     return find_equivalent_objects(profilepackage, "Addresses")
 
 @register_policy_validator("EquivalentAddressGroups", "Address Group objects that are equivalent with each other")
-def find_equivalent_addresses(profilepackage):
+def find_equivalent_addressesgroups(profilepackage):
     return find_equivalent_objects(profilepackage, "AddressGroups")
 
 @register_policy_validator("EquivalentServices", "Service objects that are equivalent with each other")
@@ -112,5 +112,5 @@ def find_equivalent_services(profilepackage):
     return find_equivalent_objects(profilepackage, "Services")
 
 @register_policy_validator("EquivalentServiceGroups", "Service Group objects that are equivalent with each other")
-def find_equivalent_addresses(profilepackage):
+def find_equivalent_servicegroups(profilepackage):
     return find_equivalent_objects(profilepackage, "ServiceGroups")
