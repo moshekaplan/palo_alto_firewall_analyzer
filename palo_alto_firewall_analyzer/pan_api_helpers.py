@@ -67,20 +67,10 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api, x
         devicegroup_objects[device_group]['all_active_child_firewalls'] = all_active_firewalls_per_devicegroup[
             device_group]
 
-        if device_group == 'shared':
-            for policy_type in pan_config.SUPPORTED_POLICY_TYPES:
-                devicegroup_objects[device_group][policy_type] = \
-                    pan_config.get_devicegroup_policy(policy_type, 'shared')[:limit]
-            for object_type in pan_config.SUPPORTED_OBJECT_TYPES:
-                devicegroup_objects[device_group][object_type] = \
-                    pan_config.get_devicegroup_object(object_type, 'shared')
-        else:
-            for policy_type in pan_config.SUPPORTED_POLICY_TYPES:
-                devicegroup_objects[device_group][policy_type] = \
-                    pan_config.get_devicegroup_policy(policy_type, device_group)[:limit]
-            for object_type in pan_config.SUPPORTED_OBJECT_TYPES:
-                devicegroup_objects[device_group][object_type] = \
-                    pan_config.get_devicegroup_object(object_type, 'device-group', device_group)
+        for policy_type in pan_config.SUPPORTED_POLICY_TYPES:
+            devicegroup_objects[device_group][policy_type] = pan_config.get_devicegroup_policy(policy_type, device_group)[:limit]
+        for object_type in pan_config.SUPPORTED_OBJECT_TYPES:
+            devicegroup_objects[device_group][object_type] = pan_config.get_devicegroup_object(object_type, device_group)
 
     rule_limit_enabled = limit is not None
 

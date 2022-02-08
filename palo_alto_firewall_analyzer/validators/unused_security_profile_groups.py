@@ -16,10 +16,7 @@ def find_unused_security_profile_groups(profilepackage, object_type, object_frie
 
     for i, device_group in enumerate(device_groups):
         print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {object_friendly_type} objects")
-        if device_group == 'shared':
-            groups = {entry.get('name'): entry for entry in pan_config.get_devicegroup_object(object_type, 'shared')}
-        else:
-            groups = {entry.get('name'): entry for entry in pan_config.get_devicegroup_object(object_type, 'device-group', device_group)}
+        groups = {entry.get('name'): entry for entry in pan_config.get_devicegroup_object(object_type, device_group)}
         if not groups:
             continue
         # A Security Profile Group object can be used by any child device group's Security Policy. Need to check all of them.
