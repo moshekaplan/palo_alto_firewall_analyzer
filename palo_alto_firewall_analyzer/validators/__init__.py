@@ -8,6 +8,7 @@ from . import find_shadowing_objects
 from . import misleading_objects
 from . import shadowing_addresses_and_groups
 from . import similar_objects
+from . import unconventionally_named_objects
 from . import unused_addresses_and_groups
 from . import unused_security_profile_groups
 from . import unused_services_and_groups
