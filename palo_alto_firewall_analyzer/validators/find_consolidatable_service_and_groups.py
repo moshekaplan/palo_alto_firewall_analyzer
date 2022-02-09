@@ -140,6 +140,8 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
                 replacements_made[member_to_replace] = service_to_replacement[member_to_replace]
                 object_policy_dict['service']['member'] = service_to_replacement[member_to_replace]
             else:
+                # Iterate through the policy's members to see which need to be replaced, and
+                # with what. Then store what changed in replacements_made
                 new_services = []
                 for member in object_policy_dict['service']['member']:
                     if member in new_services:
@@ -150,7 +152,7 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
                         new_services.append(member)
                     elif member in service_to_replacement and service_to_replacement[member] not in new_services:
                         # Member needs to be replaced, and replacement is not already present, so add it:
-                        replacements_made[member_to_replace] = service_to_replacement[member_to_replace]
+                        replacements_made[member] = service_to_replacement[member]
                         new_services.append(service_to_replacement[member])
                     else:
                         # Member needs to be replaced, but replacement is already present, so nothing to do:
