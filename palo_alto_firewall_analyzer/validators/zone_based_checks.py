@@ -2,7 +2,7 @@ import collections
 import ipaddress
 
 from palo_alto_firewall_analyzer.core import BadEntry, get_single_ip_from_address, register_policy_validator, xml_object_to_dict
-from palo_alto_firewall_analyzer.pan_api_helpers import get_firewall_zone
+from palo_alto_firewall_analyzer.pan_helpers import get_firewall_zone
 
 def get_underlying_address_objects(address_group_name, name_to_address_groups, name_to_addresses):
     """

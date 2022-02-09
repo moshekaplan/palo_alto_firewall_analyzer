@@ -2,7 +2,7 @@
 import unittest
 
 from palo_alto_firewall_analyzer.core import get_policy_validators
-from palo_alto_firewall_analyzer.core import ProfilePackage
+from palo_alto_firewall_analyzer.core import ProfilePackage, ConfigurationSettings
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 
@@ -11,15 +11,12 @@ class TestBadLogSetting(unittest.TestCase):
     def create_profilepackage(mandated_log_profile, rules):
         device_groups = ['test_dg']
         devicegroup_exclusive_objects = {'test_dg': {'SecurityPreRules': rules, 'SecurityPostRules': []}}
-
+        settings = ConfigurationSettings().get_config()
+        settings['Mandated Logging Profile'] = mandated_log_profile
         profilepackage = ProfilePackage(
-            panorama='',
             api_key='',
             pan_config=PanConfig('<_/>'),
-            mandated_log_profile=mandated_log_profile,
-            allowed_group_profiles=[],
-            default_group_profile='',
-            ignored_dns_prefixes=[],
+            settings=settings,
             device_group_hierarchy_children={},
             device_group_hierarchy_parent={},
             device_groups_and_firewalls={},
@@ -32,7 +29,7 @@ class TestBadLogSetting(unittest.TestCase):
         )
         return profilepackage
 
-    def test_with_mandated_profile(self):
+    def test_with_mandated_logsetting(self):
         test_xml = """\
         <response status="success"><result><config>
           <devices><entry><device-group><entry name="test_dg">
@@ -56,7 +53,7 @@ class TestBadLogSetting(unittest.TestCase):
         self.assertEqual(results[0].data.get('name'), 'missing_log-setting')
         self.assertEqual(results[1].data.get('name'), 'wrong_log-setting')
 
-    def test_without_mandated_profile(self):
+    def test_without_mandated_logsetting(self):
         test_xml = """\
         <response status="success"><result><config>
           <devices><entry><device-group><entry name="test_dg">
@@ -75,8 +72,7 @@ class TestBadLogSetting(unittest.TestCase):
         profilepackage = self.create_profilepackage(mandated_log_profile, rules)
         _, _, validator_function = get_policy_validators()['BadLogSetting']
         results = validator_function(profilepackage)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].data.get('name'), 'missing_log-setting')
+        self.assertEqual(len(results), 0)
 
 
 if __name__ == "__main__":

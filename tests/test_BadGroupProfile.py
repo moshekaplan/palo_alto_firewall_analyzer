@@ -2,7 +2,7 @@
 import unittest
 
 from palo_alto_firewall_analyzer.core import get_policy_validators
-from palo_alto_firewall_analyzer.core import ProfilePackage
+from palo_alto_firewall_analyzer.core import ProfilePackage, ConfigurationSettings
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 
@@ -13,14 +13,13 @@ class TestBadGroupProfile(unittest.TestCase):
         rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
         devicegroup_exclusive_objects = {'test_dg': {'SecurityPreRules': rules, 'SecurityPostRules': []}}
 
+        settings = ConfigurationSettings().get_config()
+        settings['Allowed Group Profiles'] = allowed_group_profile
+
         profilepackage = ProfilePackage(
-            panorama='',
             api_key='',
             pan_config=PanConfig('<_/>'),
-            mandated_log_profile='',
-            allowed_group_profiles=allowed_group_profile,
-            default_group_profile='',
-            ignored_dns_prefixes=[],
+            settings=settings,
             device_group_hierarchy_children={},
             device_group_hierarchy_parent={},
             device_groups_and_firewalls={},
@@ -46,7 +45,7 @@ class TestBadGroupProfile(unittest.TestCase):
           </entry></device-group></entry></devices>
         </config></result></response>
         """
-        allowed_group_profile = ['correct']
+        allowed_group_profile = 'correct'
         pan_config = PanConfig(test_xml)
         profilepackage = self.create_profilepackage(allowed_group_profile, pan_config)
 

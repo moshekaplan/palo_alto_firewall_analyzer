@@ -5,10 +5,11 @@ from palo_alto_firewall_analyzer.core import register_policy_validator, BadEntry
 def find_bad_group_profile_setting(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
-    allowed_group_profiles = profilepackage.allowed_group_profiles
 
-    if not allowed_group_profiles:
+    if not profilepackage.settings.get('Allowed Group Profiles'):
         return []
+
+    allowed_group_profiles = profilepackage.settings.get('Allowed Group Profiles').split(',')
 
     badentries = []
 

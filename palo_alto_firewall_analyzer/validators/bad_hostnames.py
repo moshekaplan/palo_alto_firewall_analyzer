@@ -5,7 +5,7 @@ from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_lookup, regist
 def find_badhostname(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
-    ignored_dns_prefixes = [dns_prefix.lower() for dns_prefix in profilepackage.ignored_dns_prefixes]
+    ignored_dns_prefixes = tuple([prefix.lower() for prefix in profilepackage.settings.get('Ignored DNS Prefixes','').split(',')])
 
     badentries = []
 

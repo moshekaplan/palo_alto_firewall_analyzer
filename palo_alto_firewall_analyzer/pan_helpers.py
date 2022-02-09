@@ -7,19 +7,7 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 from palo_alto_firewall_analyzer.core import squash_all_devicegroups, ProfilePackage
 
 
-def load_config_package(config, api_key, device_group, limit, verbose, no_api, xml_file=None):
-    panorama = config['Panorama']
-    mandated_log_profile = config.get('Mandated Logging Profile')
-    if config.get('Allowed Group Profiles'):
-        allowed_group_profiles = config.get('Allowed Group Profiles').split(',')
-    else:
-        allowed_group_profiles = tuple()
-    default_group_profile = config.get('Default Group Profile')
-
-    if config.get('Ignored DNS Prefixes'):
-        ignored_dns_prefixes = tuple([prefix.lower() for prefix in config.get('Ignored DNS Prefixes','').split(',')])
-    else:
-        ignored_dns_prefixes = tuple()
+def load_config_package(configuration_settings, api_key, device_group, limit, verbose, no_api, xml_file=None):
 
     if xml_file:
         # The list of firewalls are not available from the API, so
@@ -31,6 +19,7 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api, x
         active_firewalls_per_devicegroup = collections.defaultdict(list)
     else:
         # Load the XML configuration and list of firewalls via API requests
+        panorama = configuration_settings.get('panorama')
         xml_config = pan_api.export_configuration2(panorama, api_key)
         pan_config = PanConfig(xml_config)
         device_groups_and_firewalls = pan_api.get_device_groups_and_firewalls(panorama, api_key)
@@ -92,13 +81,9 @@ def load_config_package(config, api_key, device_group, limit, verbose, no_api, x
                 devicegroup_exclusive_objects[device_group][policy_type] = exclusive_objects
 
     profilepackage = ProfilePackage(
-        panorama=panorama,
         api_key=api_key,
         pan_config=pan_config,
-        mandated_log_profile=mandated_log_profile,
-        allowed_group_profiles=allowed_group_profiles,
-        default_group_profile=default_group_profile,
-        ignored_dns_prefixes=ignored_dns_prefixes,
+        settings=configuration_settings,
         device_group_hierarchy_children=device_group_hierarchy_children,
         device_group_hierarchy_parent=device_group_hierarchy_parent,
         device_groups_and_firewalls=device_groups_and_firewalls,

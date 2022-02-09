@@ -2,7 +2,7 @@ from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_v
 from palo_alto_firewall_analyzer import pan_api
 
 def consolidate_service_like_objects(profilepackage, object_friendly_type, validator_function):
-    panorama = profilepackage.panorama
+    panorama = profilepackage.settings.get("Panorama")
     api_key = profilepackage.api_key
     pan_config = profilepackage.pan_config
     version = pan_config.get_major_version()

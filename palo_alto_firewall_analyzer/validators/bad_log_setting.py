@@ -3,12 +3,16 @@ from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
 @register_policy_validator("BadLogSetting", "Rule uses an incorrect log profile")
 def find_bad_log_setting(profilepackage):
-    mandated_log_profile = profilepackage.mandated_log_profile
+    mandated_log_profile = profilepackage.settings['Mandated Logging Profile']
     device_groups = profilepackage.device_groups
     devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
     verbose = profilepackage.verbose
 
+    if not mandated_log_profile:
+        return []
+
     badentries = []
+
     if verbose:
         print ("*"*80)
         print ("Checking for incorrect log settings")

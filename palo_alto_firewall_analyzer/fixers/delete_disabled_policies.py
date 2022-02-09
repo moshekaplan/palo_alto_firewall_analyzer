@@ -5,7 +5,7 @@ import requests
 
 @register_policy_fixer("DeleteDisabledPolicies", "Delete disabled policies")
 def delete_disabled_policies(profilepackage):
-    panorama = profilepackage.panorama
+    panorama = profilepackage.settings.get("Panorama")
     api_key = profilepackage.api_key
     pan_config = profilepackage.pan_config
     version = pan_config.get_major_version()

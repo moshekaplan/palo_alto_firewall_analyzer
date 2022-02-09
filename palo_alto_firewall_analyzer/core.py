@@ -1,7 +1,9 @@
 import collections
+import configparser
 import dataclasses
 import functools
 import ipaddress
+import os
 import socket
 import xml.etree.ElementTree
 
@@ -45,16 +47,59 @@ def get_policy_fixers():
     return policy_fixer_registry
 
 
+class ConfigurationSettings:
+    """
+    Represents a local configuration file
+    with settings for controlling the behavior
+    of the validator and fixer scripts
+    """
+
+    def __init__(self, configfile=None):
+        """Load data from a file, otherwise create
+        a config object with default settings"""
+
+        if configfile:
+            # Validate config file exists
+            if not os.path.isfile(configfile):
+                raise Exception(f"Config file '{configfile}' does not exist! Exiting")
+            self.local_config = configparser.ConfigParser()
+            self.local_config.read(configfile)
+            self.validate_mandatory_fields()
+        else:
+            # Otherwise generate a default config file
+            self.local_config = configparser.ConfigParser(allow_no_value=True)
+            self.local_config.add_section('Analyzer')
+            self.local_config.set('Analyzer', '# Mandatory: The hostname of the panorama to query')
+            self.local_config.set('Analyzer', 'Panorama', 'my-panorama-hostname')
+            self.local_config.set('Analyzer', '# Optional config values, used by validators')
+            self.local_config.set('Analyzer', '# Mandate a specific log profile')
+            self.local_config.set('Analyzer', '# Mandated Logging Profile = default')
+            self.local_config.set('Analyzer', '# Ignore certain DNS prefixes in find_badhostname, as they might not always be available (e.g., DHCP)')
+            self.local_config.set('Analyzer', '# Ignored DNS Prefixes = PC-,iPhone')
+            self.local_config.set('Analyzer', '# Specify which Security Profile Groups are allowed and the default profile')
+            self.local_config.set('Analyzer', '# Allowed Group Profiles = Security Profile Group-default,Security Profile Group-1,Security Profile Group-2')
+            self.local_config.set('Analyzer', '# Default Group Profile = Security Profile Group-default')
+
+    def validate_mandatory_fields(self):
+        panorama = self.local_config['Analyzer']['Panorama']
+        if not panorama:
+            raise Exception("Panorama needs to be specified!")
+
+    def write_config(self, config_path):
+        os.makedirs(os.path.dirname(config_path), exist_ok=True)
+        with open(config_path, 'w') as config_fh:
+            self.local_config.write(config_fh)
+
+    def get_config(self):
+        return self.local_config['Analyzer']
+
+
 @dataclasses.dataclass
 class ProfilePackage:
     """Class for storing the values associated with a firewall configuration"""
-    panorama: str
     api_key: str
     pan_config: PanConfig
-    mandated_log_profile: str
-    allowed_group_profiles: typing.List[str]
-    default_group_profile: str
-    ignored_dns_prefixes: typing.List[str]
+    settings: ConfigurationSettings
     device_group_hierarchy_children: typing.Dict[str, typing.List]
     device_group_hierarchy_parent: typing.Dict[str, str]
     device_groups_and_firewalls: typing.Dict[str, typing.List[str]]

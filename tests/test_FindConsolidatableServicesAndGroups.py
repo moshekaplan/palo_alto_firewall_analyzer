@@ -3,7 +3,7 @@ import collections
 import unittest
 
 from palo_alto_firewall_analyzer.core import get_policy_validators
-from palo_alto_firewall_analyzer.core import ProfilePackage
+from palo_alto_firewall_analyzer.core import ProfilePackage, ConfigurationSettings
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 
@@ -21,13 +21,9 @@ class TestFindConsolidatableServicesAndGroups(unittest.TestCase):
         devicegroup_objects["test_dg"]['SecurityPreRules'] = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
 
         profilepackage = ProfilePackage(
-            panorama='',
             api_key='',
             pan_config=pan_config,
-            mandated_log_profile='',
-            allowed_group_profiles=[],
-            default_group_profile='',
-            ignored_dns_prefixes=[],
+            settings=ConfigurationSettings().get_config(),
             device_group_hierarchy_children={},
             device_group_hierarchy_parent=device_group_hierarchy_parent,
             device_groups_and_firewalls={},

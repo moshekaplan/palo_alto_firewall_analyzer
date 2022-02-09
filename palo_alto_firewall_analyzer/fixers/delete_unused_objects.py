@@ -5,7 +5,7 @@ from palo_alto_firewall_analyzer import pan_api
 import requests
 
 def delete_unused_object(profilepackage, object_type, object_friendly_type, validator_function):
-    panorama = profilepackage.panorama
+    panorama = profilepackage.settings.get("Panorama")
     api_key = profilepackage.api_key
     pan_config = profilepackage.pan_config
     version = pan_config.get_major_version()
