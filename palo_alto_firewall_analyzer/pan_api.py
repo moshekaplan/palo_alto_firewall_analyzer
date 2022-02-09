@@ -309,6 +309,30 @@ def delete_object(panorama, version, api_key, object_type, object_to_delete, dev
     return response.json()
 
 
+def rename_object(panorama, version, api_key, objecttype, old_name, new_name, device_group):
+    if objecttype not in (SUPPORTED_OBJECT_TYPES):
+        raise Exception(f"Invalid policytype '{objecttype}' ! polictype must be one of {SUPPORTED_OBJECT_TYPES}")
+
+    # 'shared' is a reserved name by PA and not allowed to be used as a device group name
+    if device_group == 'shared':
+        location_type = 'shared'
+    else:
+        location_type = 'device-group'
+    assert location_type in SUPPORTED_LOCATION_TYPES
+
+    path = f"/restapi/v{version}/Objects/{objecttype}:rename"
+    params = {
+        'output-format': 'json',
+        'location': location_type,
+        'name': old_name,
+        'newname': new_name,
+    }
+
+    if location_type == 'device-group':
+        params['device-group'] = device_group
+    response = pan_api(panorama, method="post", path=path, params=params, api_key=api_key)
+    return response.json()
+
 def delete_policy(panorama, version, api_key, policy_type, policy_name, device_group):
     if policy_type not in SUPPORTED_POLICY_TYPES:
         raise Exception(f"Invalid policy_type '{policy_type}' ! polictype must be one of {SUPPORTED_POLICY_TYPES}")
@@ -416,29 +440,7 @@ def create_object(panorama, version, api_key, object_type, object_to_create, loc
 
 
 
-def rename_devicegroup_object(panorama, version, api_key, objecttype, oldname, newname, locationtype,
-                              device_group=None):
-    if objecttype not in (SUPPORTED_OBJECT_TYPES):
-        raise Exception(f"Invalid policytype '{objecttype}' ! polictype must be one of {SUPPORTED_OBJECT_TYPES}")
 
-    if locationtype not in SUPPORTED_LOCATION_TYPES:
-        raise Exception(
-            f"Unsupported locationtype of {locationtype}! locationtype must be one of {SUPPORTED_LOCATION_TYPES}")
-
-    path = f"/restapi/v{version}/Objects/{objecttype}:rename"
-    params = {
-        'output-format': 'json',
-        'location': locationtype,
-        'name': oldname,
-        'newname': newname,
-    }
-
-    if locationtype == 'device-group':
-        params['device-group'] = device_group
-
-    response = pan_api(panorama, method="post", path=path, params=params, api_key=api_key)
-
-    return response.json()
 
 
 # Test code:
