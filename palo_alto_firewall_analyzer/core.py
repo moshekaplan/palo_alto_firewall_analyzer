@@ -81,6 +81,9 @@ class ConfigurationSettings:
             self.local_config.set('Analyzer', '# Default Group Profile = Security Profile Group-default')
             self.local_config.set('Analyzer', '# UnconventionallyNamedServices: Specify a format for Service object names. Available fields are: {transport}, {source-port}, {port}, {override}')
             self.local_config.set('Analyzer', '# service name format = {transport}-{port}')
+            self.local_config.set('Analyzer', '# EquivalentObjects: Whether to ignore the description field when comparing if two objects are equivalent (false by default)')
+            self.local_config.set('Analyzer', 'Equivalent objects ignore description = false')
+
 
     def validate_mandatory_fields(self):
         panorama = self.local_config['Analyzer']['Panorama']

@@ -44,7 +44,7 @@ NORMALIZATION_FUNCTIONS = {'Addresses': normalize_address,
 
 
 @functools.lru_cache(maxsize=None)
-def normalize_object(obj, object_type):
+def normalize_object(obj, object_type, ignore_description):
     """Turn an XML-based object into a
     normalized string representation.
 
@@ -57,6 +57,10 @@ def normalize_object(obj, object_type):
 
     # Specifically don't look at the name, or every object would be unique
     del obj_dict['entry']['@name']
+
+    # Ignore the description field, if configured to do so
+    if ignore_description and 'description' in obj_dict['entry']:
+        del obj_dict['entry']['description']
 
     if object_type in NORMALIZATION_FUNCTIONS:
         obj_dict = NORMALIZATION_FUNCTIONS[object_type](obj_dict)
@@ -71,6 +75,7 @@ def find_equivalent_objects(profilepackage, object_type):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
+    ignore_description = profilepackage.settings.getboolean("Equivalent objects ignore description", False)
 
     badentries = []
 
@@ -90,12 +95,12 @@ def find_equivalent_objects(profilepackage, object_type):
         all_equivalent_objects = collections.defaultdict(list)
         for dg in parent_dgs:
             for obj in devicegroup_objects[dg][object_type]:
-                object_data = normalize_object(obj, object_type)
+                object_data = normalize_object(obj, object_type, ignore_description)
                 all_equivalent_objects[object_data].append((dg, obj))
 
         local_equivalencies = set()
         for obj in devicegroup_objects[device_group][object_type]:
-            object_data = normalize_object(obj, object_type)
+            object_data = normalize_object(obj, object_type, ignore_description)
             local_equivalencies.add(object_data)
             all_equivalent_objects[object_data].append((device_group, obj))
 
