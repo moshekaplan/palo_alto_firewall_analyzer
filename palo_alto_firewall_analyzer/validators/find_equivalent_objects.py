@@ -7,27 +7,41 @@ import xmltodict
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
-def normalize_address(addr_dict):
+
+def normalize_address(obj_dict):
     # Append /32 to IPv4 addresses
-    if 'ip-netmask' in addr_dict['entry'] and '.' in addr_dict['entry']['ip-netmask'] and '/' not in addr_dict['entry']['ip-netmask']:
-        addr_dict['entry']['ip-netmask'] += "/32"
-    return addr_dict
+    if 'ip-netmask' in obj_dict['entry'] and '.' in obj_dict['entry']['ip-netmask'] and '/' not in obj_dict['entry']['ip-netmask']:
+        obj_dict['entry']['ip-netmask'] += "/32"
+    return obj_dict
 
-def normalize_addressgroup(addr_dict):
+
+def normalize_addressgroup(obj_dict):
     # Sort the members of static address group objects
-    if 'static' in addr_dict['entry']:
-        addr_dict['entry']['static']['member'] = sorted(addr_dict['entry']['static']['member'])
-    return addr_dict
+    if 'static' in obj_dict['entry']:
+        obj_dict['entry']['static']['member'] = sorted(obj_dict['entry']['static']['member'])
+    return obj_dict
 
-def normalize_servicegroup(addr_dict):
+
+def normalize_servicegroup(obj_dict):
     # Sort the members of service group objects
-    addr_dict['entry']['members']['member'] = sorted(addr_dict['entry']['members']['member'])
-    return addr_dict
+    obj_dict['entry']['members']['member'] = sorted(obj_dict['entry']['members']['member'])
+    return obj_dict
+
+
+def normalize_services(obj_dict):
+    # override not being present is the same as it having a key of 'no' with value null
+    transport = [protocol for protocol in obj_dict['entry']['protocol'].keys()][0]
+    if 'override' in obj_dict['entry']['protocol'][transport] and obj_dict['entry']['protocol'][transport]["override"] == {"no": None}:
+        del obj_dict['entry']['protocol'][transport]["override"]
+    return obj_dict
+
 
 NORMALIZATION_FUNCTIONS = {'Addresses': normalize_address,
                            'AddressGroups': normalize_addressgroup,
+                           'Services': normalize_services,
                            'ServiceGroups': normalize_servicegroup,
                            }
+
 
 @functools.lru_cache(maxsize=None)
 def normalize_object(obj, object_type):
@@ -39,15 +53,15 @@ def normalize_object(obj, object_type):
     deleting the keys we don't want to look at,
     and then converting the dictionary to a string"""
     xml_string = xml.etree.ElementTree.tostring(obj)
-    normalized_dict = xmltodict.parse(xml_string)
+    obj_dict = xmltodict.parse(xml_string)
 
     # Specifically don't look at the name, or every object would be unique
-    del normalized_dict['entry']['@name']
+    del obj_dict['entry']['@name']
 
     if object_type in NORMALIZATION_FUNCTIONS:
-        normalized_dict = NORMALIZATION_FUNCTIONS[object_type](normalized_dict)
+        obj_dict = NORMALIZATION_FUNCTIONS[object_type](obj_dict)
 
-    return json.dumps(normalized_dict, sort_keys=True)
+    return json.dumps(obj_dict, sort_keys=True)
 
 
 def find_equivalent_objects(profilepackage, object_type):
@@ -103,13 +117,16 @@ def find_equivalent_objects(profilepackage, object_type):
 def find_equivalent_addresses(profilepackage):
     return find_equivalent_objects(profilepackage, "Addresses")
 
+
 @register_policy_validator("EquivalentAddressGroups", "Address Group objects that are equivalent with each other")
 def find_equivalent_addressesgroups(profilepackage):
     return find_equivalent_objects(profilepackage, "AddressGroups")
 
+
 @register_policy_validator("EquivalentServices", "Service objects that are equivalent with each other")
 def find_equivalent_services(profilepackage):
     return find_equivalent_objects(profilepackage, "Services")
+
 
 @register_policy_validator("EquivalentServiceGroups", "Service Group objects that are equivalent with each other")
 def find_equivalent_servicegroups(profilepackage):
