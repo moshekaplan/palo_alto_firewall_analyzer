@@ -8,22 +8,19 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 class TestEquivalentObjects(unittest.TestCase):
     @staticmethod
-    def create_profilepackage(object_type, shared_objects, dg_objects):
+    def create_profilepackage(object_type, pan_config):
         device_groups = ["shared", "test_dg"]
         device_group_hierarchy_parent = {"test_dg": "shared"}
-        devicegroup_objects = {"shared": {}, "test_dg": {}}
-        devicegroup_objects["shared"][object_type] = shared_objects
-        devicegroup_objects["test_dg"][object_type] = dg_objects
 
         profilepackage = ProfilePackage(
             api_key='',
-            pan_config=PanConfig('<_/>'),
+            pan_config=pan_config,
             settings=ConfigurationSettings().get_config(),
             device_group_hierarchy_children={},
             device_group_hierarchy_parent=device_group_hierarchy_parent,
             device_groups_and_firewalls={},
             device_groups=device_groups,
-            devicegroup_objects=devicegroup_objects,
+            devicegroup_objects={},
             devicegroup_exclusive_objects={},
             rule_limit_enabled=False,
             verbose=False,
@@ -52,9 +49,7 @@ class TestEquivalentObjects(unittest.TestCase):
         </config></result></response>
         """
         pan_config = PanConfig(test_xml)
-        shared_addresses = pan_config.get_devicegroup_object('Addresses', 'shared')
-        dg_addresses = pan_config.get_devicegroup_object('Addresses', 'test_dg')
-        profilepackage = self.create_profilepackage('Addresses', shared_addresses, dg_addresses)
+        profilepackage = self.create_profilepackage('Addresses', pan_config)
         _, _, validator_function = get_policy_validators()['EquivalentAddresses']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
@@ -92,9 +87,7 @@ class TestEquivalentObjects(unittest.TestCase):
         </config></result></response>
         """
         pan_config = PanConfig(test_xml)
-        shared_addresses = pan_config.get_devicegroup_object('AddressGroups', 'shared')
-        dg_addresses = pan_config.get_devicegroup_object('AddressGroups', 'test_dg')
-        profilepackage = self.create_profilepackage('AddressGroups', shared_addresses, dg_addresses)
+        profilepackage = self.create_profilepackage('AddressGroups', pan_config)
         _, _, validator_function = get_policy_validators()['EquivalentAddressGroups']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
@@ -123,9 +116,7 @@ class TestEquivalentObjects(unittest.TestCase):
         </config></result></response>
         """
         pan_config = PanConfig(test_xml)
-        shared_services = pan_config.get_devicegroup_object('Services', 'shared')
-        dg_services = pan_config.get_devicegroup_object('Services', 'test_dg')
-        profilepackage = self.create_profilepackage('Services', shared_services, dg_services)
+        profilepackage = self.create_profilepackage('Services', pan_config)
 
         _, _, validator_function = get_policy_validators()['EquivalentServices']
         results = validator_function(profilepackage)
@@ -159,9 +150,7 @@ class TestEquivalentObjects(unittest.TestCase):
         </config></result></response>
         """
         pan_config = PanConfig(test_xml)
-        shared_services = pan_config.get_devicegroup_object('ServiceGroups', 'shared')
-        dg_services = pan_config.get_devicegroup_object('ServiceGroups', 'test_dg')
-        profilepackage = self.create_profilepackage('ServiceGroups', shared_services, dg_services)
+        profilepackage = self.create_profilepackage('ServiceGroups', pan_config)
 
         _, _, validator_function = get_policy_validators()['EquivalentServiceGroups']
         results = validator_function(profilepackage)

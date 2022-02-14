@@ -73,7 +73,7 @@ def find_equivalent_objects(profilepackage, object_type):
     Generic function for finding all objects in the hierarchy with effectively the same values
     """
     device_groups = profilepackage.device_groups
-    devicegroup_objects = profilepackage.devicegroup_objects
+    pan_config = profilepackage.pan_config
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     ignore_description = profilepackage.settings.getboolean("Equivalent objects ignore description", False)
 
@@ -94,12 +94,12 @@ def find_equivalent_objects(profilepackage, object_type):
 
         all_equivalent_objects = collections.defaultdict(list)
         for dg in parent_dgs:
-            for obj in devicegroup_objects[dg][object_type]:
+            for obj in pan_config.get_devicegroup_object(object_type, dg):
                 object_data = normalize_object(obj, object_type, ignore_description)
                 all_equivalent_objects[object_data].append((dg, obj))
 
         local_equivalencies = set()
-        for obj in devicegroup_objects[device_group][object_type]:
+        for obj in pan_config.get_devicegroup_object(object_type, device_group):
             object_data = normalize_object(obj, object_type, ignore_description)
             local_equivalencies.add(object_data)
             all_equivalent_objects[object_data].append((device_group, obj))
