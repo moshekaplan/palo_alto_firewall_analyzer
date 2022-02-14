@@ -26,12 +26,12 @@ def find_replacement_objects(pan_config, devicegroup_objects, device_group, obje
     services_to_counts = collections.Counter()
     for child_dg in devicegroup_objects[device_group]['all_child_device_groups']:
         # First check all child Services Groups
-        for servicegroup in devicegroup_objects[child_dg]['ServiceGroups']:
+        for servicegroup in pan_config.get_devicegroup_object('ServiceGroups', child_dg):
             for member_element in servicegroup.findall('./members/member'):
                 services_to_counts[member_element.text] += 1
         # Then check all of the policies
         for policytype in pan_config.SUPPORTED_POLICY_TYPES:
-            for policy_entry in devicegroup_objects[child_dg][policytype]:
+            for policy_entry in pan_config.get_devicegroup_policy(policytype, child_dg):
                 if policytype in ("NATPreRules", "NATPostRules"):
                     for service_element in policy_entry.findall('./service'):
                         services_to_counts[service_element.text] += 1
@@ -55,14 +55,14 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
 
     for child_dg in devicegroup_objects[device_group]['all_child_device_groups']:
         # First check all child Services Groups
-        for servicegroup in devicegroup_objects[child_dg]['ServiceGroups']:
+        for servicegroup in pan_config.get_devicegroup_object('ServiceGroups', child_dg):
             for member_element in servicegroup.findall('./members/member'):
                 if member_element.text in services_to_replace:
                     servicegroups_needing_replacement += [(child_dg, 'ServiceGroups', servicegroup)]
                     break
         # Then check all of the policies
         for policytype in pan_config.SUPPORTED_POLICY_TYPES:
-            for policy_entry in devicegroup_objects[child_dg][policytype]:
+            for policy_entry in pan_config.get_devicegroup_policy(policytype, child_dg):
                 if policytype in ("NATPreRules", "NATPostRules"):
                     for service_element in policy_entry.findall('./service'):
                         if service_element.text in services_to_replace:
