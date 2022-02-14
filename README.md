@@ -2,12 +2,14 @@
 
 ![Build](https://github.com/moshekaplan/palo_alto_firewall_analyzer/actions/workflows/test.yml/badge.svg)
 
-Scripts for reviewing Palo Alto Firewall configurations
+Scripts for reviewing and fixing Palo Alto Firewall configurations
 
-This repository contains the following main scripts:
+This repository contains the following user scripts:
 
 * `pan_policy_validator.py` - Detects Palo Alto Network firewall configuration issues
 * `pan_policy_fixer.py` - Fixes detected Palo Alto Network firewall configuration issues
+
+The validators are designed to have as few false positives as possible. If there is a false positive, please [report an issue](https://github.com/moshekaplan/palo_alto_firewall_analyzer/issues/new)!
 
 ## Quickstart
 
