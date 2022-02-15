@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/moshekaplan/palo_alto_firewall_analyzer/actions/workflows/test.yml/badge.svg)
 
-Scripts for reviewing and fixing Palo Alto Firewall configurations
+Python3 scripts for reviewing and fixing Palo Alto Firewall configurations
 
 This repository contains the following user scripts:
 
