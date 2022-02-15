@@ -8,21 +8,20 @@ from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 class TestBadLogSetting(unittest.TestCase):
     @staticmethod
-    def create_profilepackage(mandated_log_profile, rules):
+    def create_profilepackage(pan_config, mandated_log_profile):
         device_groups = ['test_dg']
-        devicegroup_exclusive_objects = {'test_dg': {'SecurityPreRules': rules, 'SecurityPostRules': []}}
         settings = ConfigurationSettings().get_config()
         settings['Mandated Logging Profile'] = mandated_log_profile
         profilepackage = ProfilePackage(
             api_key='',
-            pan_config=PanConfig('<_/>'),
+            pan_config=pan_config,
             settings=settings,
             device_group_hierarchy_children={},
             device_group_hierarchy_parent={},
             device_groups_and_firewalls={},
             device_groups=device_groups,
             devicegroup_objects={},
-            devicegroup_exclusive_objects=devicegroup_exclusive_objects,
+            devicegroup_exclusive_objects={},
             rule_limit_enabled=False,
             verbose=False,
             no_api=False
@@ -44,14 +43,13 @@ class TestBadLogSetting(unittest.TestCase):
         """
         mandated_log_profile = 'correct'
         pan_config = PanConfig(test_xml)
-        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
-        profilepackage = self.create_profilepackage(mandated_log_profile, rules)
+        profilepackage = self.create_profilepackage(pan_config, mandated_log_profile)
 
         _, _, validator_function = get_policy_validators()['BadLogSetting']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0].data.get('name'), 'missing_log-setting')
-        self.assertEqual(results[1].data.get('name'), 'wrong_log-setting')
+        self.assertEqual(results[0].data[0].get('name'), 'missing_log-setting')
+        self.assertEqual(results[1].data[0].get('name'), 'wrong_log-setting')
 
     def test_without_mandated_logsetting(self):
         test_xml = """\
@@ -68,8 +66,7 @@ class TestBadLogSetting(unittest.TestCase):
         """
         mandated_log_profile = None
         pan_config = PanConfig(test_xml)
-        rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
-        profilepackage = self.create_profilepackage(mandated_log_profile, rules)
+        profilepackage = self.create_profilepackage(pan_config, mandated_log_profile)
         _, _, validator_function = get_policy_validators()['BadLogSetting']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
