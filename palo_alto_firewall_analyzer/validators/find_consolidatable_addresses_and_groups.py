@@ -94,21 +94,29 @@ def consolidate_address_like_objects(profilepackage, object_type, object_friendl
             object_policy_dict = xml_object_to_dict(object_entry)['entry']
             new_addresses = []
             replacements_made = {}
-            for member in object_policy_dict['static']['member']:
-                if member in new_addresses:
-                    # Member is already present, nothing to do
-                    continue
-                elif member not in address_to_replacement:
-                    # Member is not present and doesn't need to be replaced, so keep it as is:
-                    new_addresses.append(member)
-                elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
-                    # Member needs to be replaced, and replacement is not already present, so add it:
-                    new_addresses.append(address_to_replacement[member])
-                    replacements_made[member] = address_to_replacement[member]
-                else:
-                    # Member needs to be replaced, but replacement is already present, so nothing to do:
-                    continue
+
+            # If it's an addressgroup with only one member, it'll be parsed as a string, not a list
+            if isinstance(object_policy_dict['static']['member'], str):
+                member_to_replace = object_policy_dict['static']['member']
+                replacements_made[member_to_replace] = address_to_replacement[member_to_replace]
+                new_addresses.append(address_to_replacement[member_to_replace])
+            else:
+                for member in object_policy_dict['static']['member']:
+                    if member in new_addresses:
+                        # Member is already present, nothing to do
+                        continue
+                    elif member not in address_to_replacement:
+                        # Member is not present and doesn't need to be replaced, so keep it as is:
+                        new_addresses.append(member)
+                    elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
+                        # Member needs to be replaced, and replacement is not already present, so add it:
+                        new_addresses.append(address_to_replacement[member])
+                        replacements_made[member] = address_to_replacement[member]
+                    else:
+                        # Member needs to be replaced, but replacement is already present, so nothing to do:
+                        continue
             assert object_policy_dict['static']['member'] != new_addresses
+
             object_policy_dict['static']['member'] = new_addresses
             text = f"Replace the following Address members in {object_dg}'s {object_type} {object_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
             badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type))

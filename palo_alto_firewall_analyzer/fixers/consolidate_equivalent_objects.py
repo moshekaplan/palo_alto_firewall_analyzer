@@ -20,7 +20,6 @@ def consolidate_service_like_objects(profilepackage, object_friendly_type, valid
         object_policy_entry, object_policy_dict = badentry.data
         object_policy_dg = badentry.device_group
         object_policy_type = badentry.entry_type
-
         if object_policy_type in pan_config.SUPPORTED_OBJECT_TYPES:
             pan_api.update_devicegroup_object(panorama, version, api_key, object_policy_dict, object_policy_type, object_policy_dg)
         elif object_policy_type in pan_config.SUPPORTED_POLICY_TYPES:
@@ -30,14 +29,28 @@ def consolidate_service_like_objects(profilepackage, object_friendly_type, valid
     return badentries_needing_consolidation
 
 @register_policy_fixer("ConsolidateServices", "Consolidate use of equivalent Service objects so only one object is used")
-def delete_unused_addresses(profilepackage):
+def consolidate_services(profilepackage):
     object_friendly_type = "Service"
     _, _, validator_function = get_policy_validators()['FindConsolidatableServices']
     return consolidate_service_like_objects(profilepackage, object_friendly_type, validator_function)
 
 
 @register_policy_fixer("ConsolidateServiceGroups", "Consolidate use of equivalent ServiceGroup objects so only one object is used")
-def delete_unused_addressgroups(profilepackage):
+def consolidate_servicegroups(profilepackage):
     object_friendly_type = "Service Group"
     _, _, validator_function = get_policy_validators()['FindConsolidatableServiceGroups']
+    return consolidate_service_like_objects(profilepackage, object_friendly_type, validator_function)
+
+
+@register_policy_fixer("ConsolidateAddresses", "Consolidate use of equivalent Address objects so only one object is used")
+def consolidate_addresses(profilepackage):
+    object_friendly_type = "Address"
+    _, _, validator_function = get_policy_validators()['FindConsolidatableAddresses']
+    return consolidate_service_like_objects(profilepackage, object_friendly_type, validator_function)
+
+
+@register_policy_fixer("ConsolidateAddressGroups", "Consolidate use of equivalent AddressGroup objects so only one object is used")
+def consolidate_addressgroups(profilepackage):
+    object_friendly_type = "Address Group"
+    _, _, validator_function = get_policy_validators()['FindConsolidatableAddresseGroups']
     return consolidate_service_like_objects(profilepackage, object_friendly_type, validator_function)
