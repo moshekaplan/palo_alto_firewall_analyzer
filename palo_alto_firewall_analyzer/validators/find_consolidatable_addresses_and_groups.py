@@ -66,6 +66,81 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
     return addressgroups_needing_replacement, policies_needing_replacement
 
 
+def replace_addressgroup_contents(addressgroups_needing_replacement, address_to_replacement):
+    badentries = []
+    for object_dg, object_type, object_entry in addressgroups_needing_replacement:
+        object_policy_dict = xml_object_to_dict(object_entry)['entry']
+        new_addresses = []
+        replacements_made = {}
+
+        # If it's an addressgroup with only one member, it'll be parsed as a string, not a list
+        if isinstance(object_policy_dict['static']['member'], str):
+            member_to_replace = object_policy_dict['static']['member']
+            replacements_made[member_to_replace] = address_to_replacement[member_to_replace]
+            new_addresses.append(address_to_replacement[member_to_replace])
+        else:
+            for member in object_policy_dict['static']['member']:
+                if member in new_addresses:
+                    # Member is already present, nothing to do
+                    continue
+                elif member not in address_to_replacement:
+                    # Member is not present and doesn't need to be replaced, so keep it as is:
+                    new_addresses.append(member)
+                elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
+                    # Member needs to be replaced, and replacement is not already present, so add it:
+                    new_addresses.append(address_to_replacement[member])
+                    replacements_made[member] = address_to_replacement[member]
+                else:
+                    # Member needs to be replaced, but replacement is already present, so nothing to do:
+                    continue
+        assert object_policy_dict['static']['member'] != new_addresses
+
+        object_policy_dict['static']['member'] = new_addresses
+        text = f"Replace the following Address members in {object_dg}'s {object_type} {object_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
+        badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type))
+    return badentries
+
+
+def replace_policy_contents(policies_needing_replacement, address_to_replacement):
+    badentries = []
+    for policy_dg, policy_type, policy_entry in policies_needing_replacement:
+        object_policy_dict = xml_object_to_dict(policy_entry)['entry']
+        replacements_made = {}
+        for direction in ('source', 'destination'):
+            # If it's a policy with only one member, it'll be parsed as a string, not a list
+            if isinstance(object_policy_dict[direction]['member'], str):
+                # Test if this is true
+                member_to_replace = object_policy_dict[direction]['member']
+                if member_to_replace in address_to_replacement:
+                    replacements_made[member_to_replace] = address_to_replacement[member_to_replace]
+                    object_policy_dict[direction]['member'] = address_to_replacement[member_to_replace]
+            else:
+                # Iterate through the policy's members to see which need to be replaced, and
+                # with what. Then store what changed in replacements_made
+                new_addresses = []
+                for member in object_policy_dict[direction]['member']:
+                    if member in new_addresses:
+                        # Member is already present, nothing to do
+                        continue
+                    elif member not in address_to_replacement:
+                        # Member is not present and doesn't need to be replaced, so keep it as is:
+                        new_addresses.append(member)
+                    elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
+                        # Member needs to be replaced, and replacement is not already present, so add it:
+                        replacements_made[member] = address_to_replacement[member]
+                        new_addresses.append(address_to_replacement[member])
+                    else:
+                        # Member needs to be replaced, but replacement is already present, so nothing to do:
+                        continue
+                # Note that it's possible for there to be no replacements made, because the replacing was
+                # only needed in 'source', not 'destination', or vice-versa
+                # If no replacements were made, than object_policy_dict[direction]['member'] = new_addresses will not
+                # actually result in any change - but that's fine, because it's still one API request for the
+                # other members and since this hasn't modified, it won't muddy up the diff
+                object_policy_dict[direction]['member'] = new_addresses
+        text = f"Replace the following Address members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
+        badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
+    return badentries
 
 def consolidate_address_like_objects(profilepackage, object_type, object_friendly_type, validator_function):
     pan_config = profilepackage.pan_config
@@ -90,75 +165,10 @@ def consolidate_address_like_objects(profilepackage, object_type, object_friendl
         # Now that we know which objects need replacements, we can iterate through
         # and make those replacements!
         # First replace the contents of addressgroups
-        for object_dg, object_type, object_entry in addressgroups_needing_replacement:
-            object_policy_dict = xml_object_to_dict(object_entry)['entry']
-            new_addresses = []
-            replacements_made = {}
-
-            # If it's an addressgroup with only one member, it'll be parsed as a string, not a list
-            if isinstance(object_policy_dict['static']['member'], str):
-                member_to_replace = object_policy_dict['static']['member']
-                replacements_made[member_to_replace] = address_to_replacement[member_to_replace]
-                new_addresses.append(address_to_replacement[member_to_replace])
-            else:
-                for member in object_policy_dict['static']['member']:
-                    if member in new_addresses:
-                        # Member is already present, nothing to do
-                        continue
-                    elif member not in address_to_replacement:
-                        # Member is not present and doesn't need to be replaced, so keep it as is:
-                        new_addresses.append(member)
-                    elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
-                        # Member needs to be replaced, and replacement is not already present, so add it:
-                        new_addresses.append(address_to_replacement[member])
-                        replacements_made[member] = address_to_replacement[member]
-                    else:
-                        # Member needs to be replaced, but replacement is already present, so nothing to do:
-                        continue
-            assert object_policy_dict['static']['member'] != new_addresses
-
-            object_policy_dict['static']['member'] = new_addresses
-            text = f"Replace the following Address members in {object_dg}'s {object_type} {object_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
-            badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type))
-
+        badentries += replace_addressgroup_contents(addressgroups_needing_replacement, address_to_replacement)
         # Then replace the contents of policies
-        for policy_dg, policy_type, policy_entry in policies_needing_replacement:
-            object_policy_dict = xml_object_to_dict(policy_entry)['entry']
-            replacements_made = {}
-            for direction in ('source', 'destination'):
-                # If it's a policy with only one member, it'll be parsed as a string, not a list
-                if isinstance(object_policy_dict[direction]['member'], str):
-                    # Test if this is true
-                    member_to_replace = object_policy_dict[direction]['member']
-                    if member_to_replace in address_to_replacement:
-                        replacements_made[member_to_replace] = address_to_replacement[member_to_replace]
-                        object_policy_dict[direction]['member'] = address_to_replacement[member_to_replace]
-                else:
-                    # Iterate through the policy's members to see which need to be replaced, and
-                    # with what. Then store what changed in replacements_made
-                    new_addresses = []
-                    for member in object_policy_dict[direction]['member']:
-                        if member in new_addresses:
-                            # Member is already present, nothing to do
-                            continue
-                        elif member not in address_to_replacement:
-                            # Member is not present and doesn't need to be replaced, so keep it as is:
-                            new_addresses.append(member)
-                        elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
-                            # Member needs to be replaced, and replacement is not already present, so add it:
-                            replacements_made[member] = address_to_replacement[member]
-                            new_addresses.append(address_to_replacement[member])
-                        else:
-                            # Member needs to be replaced, but replacement is already present, so nothing to do:
-                            continue
-                    # Note that it's possible for there to be no replacements made, because the replacing was
-                    # only needed in 'source', not 'destination', or vice-versa
-                    # If no replacements were made, than object_policy_dict[direction]['member'] = new_addresses will not
-                    # actually result in any change - but that's fine, because it's still one API request for the
-                    # other members and since this hasn't modified, it won't muddy up the diff
-                    object_policy_dict[direction]['member'] = new_addresses
-            text = f"Replace the following Address members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
-            badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
+        badentries += replace_policy_contents(policies_needing_replacement, address_to_replacement)
+
     return badentries
 
 @register_policy_validator("FindConsolidatableAddresses", "Consolidate use of equivalent Address objects so only one object is used")
