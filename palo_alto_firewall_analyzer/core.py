@@ -85,6 +85,8 @@ class ConfigurationSettings:
             self.local_config.set('Analyzer', 'host name format = host-{host}')
             self.local_config.set('Analyzer', 'net name format = net-{host}_{network}')
             self.local_config.set('Analyzer', 'range name format = range-{range}')
+            self.local_config.set('Analyzer', '# Palo alto does not allow colon (:) characters in names')
+            self.local_config.set('Analyzer', 'ipv6 colon replacement char = _')
             self.local_config.set('Analyzer', 'wildcard name format = wildcard-{mask}')
             self.local_config.set('Analyzer', '# UnconventionallyNamedServices: Specify a format for Service object names. Available fields are: {transport}, {source-port}, {port}, {override}')
             self.local_config.set('Analyzer', '# service name format = {transport}-{port}')

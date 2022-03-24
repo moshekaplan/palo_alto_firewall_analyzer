@@ -59,6 +59,7 @@ def find_unconventional_services(profilepackage):
     wildcard_name_format = profilepackage.settings.get('wildcard name format')
     host_name_format = profilepackage.settings.get('host name format')
     net_name_format = profilepackage.settings.get('net name format')
+    colon_replacement = profilepackage.settings.get('ipv6 colon replacement char')
     if not fqdn_name_format or not host_name_format or not net_name_format or not range_name_format or not wildcard_name_format:
         return []
 
@@ -95,6 +96,8 @@ def find_unconventional_services(profilepackage):
                 calculated_name = wildcard_name_format.format(**address_fields)
             elif address_type == 'ip-netmask':
                 address_fields['host'] = address_dict['entry']['ip-netmask'].split('/', 1)[0]
+                if colon_replacement and ':' in address_fields['host']:
+                    address_fields['host'] = address_fields['host'].replace(':', colon_replacement)
                 if '/' in address_dict['entry']['ip-netmask']:
                     address_fields['network'] = address_dict['entry']['ip-netmask'].split('/', 1)[1]
                 else:
@@ -107,6 +110,8 @@ def find_unconventional_services(profilepackage):
                 else:
                     calculated_name = net_name_format.format(**address_fields)
 
+            # PA supports a max char length of 63:
+            calculated_name = calculated_name[:63]
             if address_name != calculated_name:
                 text = f"Device Group {device_group}'s Address {address_name} should instead be named {calculated_name}"
                 badentries.append(BadEntry(data=[address_entry, calculated_name], text=text, device_group=device_group, entry_type='Addresses'))
