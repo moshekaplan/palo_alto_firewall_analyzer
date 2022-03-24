@@ -147,7 +147,7 @@ def consolidate_address_like_objects(profilepackage, object_type, object_friendl
     devicegroup_objects = profilepackage.devicegroup_objects
 
     print ("*"*80)
-    print (f"Checking for unused {object_friendly_type} objects to consolidate")
+    print (f"Checking for {object_friendly_type} objects to consolidate")
 
     # Objects will only be consolidated at the same device group level, to avoid potential scope issues
     equivalent_objects = validator_function(profilepackage)
