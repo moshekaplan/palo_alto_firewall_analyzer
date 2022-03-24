@@ -12,6 +12,12 @@ def normalize_address(obj_dict):
     # Append /32 to IPv4 addresses
     if 'ip-netmask' in obj_dict['entry'] and '.' in obj_dict['entry']['ip-netmask'] and '/' not in obj_dict['entry']['ip-netmask']:
         obj_dict['entry']['ip-netmask'] += "/32"
+    # Append /128 to IPv6 addresses
+    if 'ip-netmask' in obj_dict['entry'] and ':' in obj_dict['entry']['ip-netmask'] and '/' not in obj_dict['entry']['ip-netmask']:
+        obj_dict['entry']['ip-netmask'] += "/128"
+    # Make all FQDNs lower case
+    if 'fqdn' in obj_dict['entry']:
+        obj_dict['entry']['fqdn'] = obj_dict['entry']['fqdn'].lower()
     return obj_dict
 
 
@@ -44,7 +50,7 @@ NORMALIZATION_FUNCTIONS = {'Addresses': normalize_address,
 
 
 @functools.lru_cache(maxsize=None)
-def normalize_object(obj, object_type, ignore_description):
+def normalize_object(obj, object_type, ignore_description, ignore_tags):
     """Turn an XML-based object into a
     normalized string representation.
 
@@ -61,6 +67,9 @@ def normalize_object(obj, object_type, ignore_description):
     # Ignore the description field, if configured to do so
     if ignore_description and 'description' in obj_dict['entry']:
         del obj_dict['entry']['description']
+    # Ignore the tags, if configured to do so
+    if ignore_tags and 'tag' in obj_dict['entry']:
+        del obj_dict['entry']['tag']
 
     if object_type in NORMALIZATION_FUNCTIONS:
         obj_dict = NORMALIZATION_FUNCTIONS[object_type](obj_dict)
@@ -76,6 +85,7 @@ def find_equivalent_objects(profilepackage, object_type):
     pan_config = profilepackage.pan_config
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     ignore_description = profilepackage.settings.getboolean("Equivalent objects ignore description", False)
+    ignore_tags = profilepackage.settings.getboolean("Equivalent objects ignore tags", False)
 
     badentries = []
 
@@ -95,12 +105,12 @@ def find_equivalent_objects(profilepackage, object_type):
         all_equivalent_objects = collections.defaultdict(list)
         for dg in parent_dgs:
             for obj in pan_config.get_devicegroup_object(object_type, dg):
-                object_data = normalize_object(obj, object_type, ignore_description)
+                object_data = normalize_object(obj, object_type, ignore_description, ignore_tags)
                 all_equivalent_objects[object_data].append((dg, obj))
 
         local_equivalencies = set()
         for obj in pan_config.get_devicegroup_object(object_type, device_group):
-            object_data = normalize_object(obj, object_type, ignore_description)
+            object_data = normalize_object(obj, object_type, ignore_description, ignore_tags)
             local_equivalencies.add(object_data)
             all_equivalent_objects[object_data].append((device_group, obj))
 

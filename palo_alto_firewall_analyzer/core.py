@@ -83,6 +83,7 @@ class ConfigurationSettings:
             self.local_config.set('Analyzer', '# service name format = {transport}-{port}')
             self.local_config.set('Analyzer', '# EquivalentObjects: Whether to ignore the description field when comparing if two objects are equivalent (false by default)')
             self.local_config.set('Analyzer', 'Equivalent objects ignore description = false')
+            self.local_config.set('Analyzer', 'Equivalent objects ignore tags = false')
 
 
     def validate_mandatory_fields(self):
