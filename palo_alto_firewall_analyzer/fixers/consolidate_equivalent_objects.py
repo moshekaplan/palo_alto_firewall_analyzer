@@ -52,5 +52,5 @@ def consolidate_addresses(profilepackage):
 @register_policy_fixer("ConsolidateAddressGroups", "Consolidate use of equivalent AddressGroup objects so only one object is used")
 def consolidate_addressgroups(profilepackage):
     object_friendly_type = "Address Group"
-    _, _, validator_function = get_policy_validators()['FindConsolidatableAddresseGroups']
+    _, _, validator_function = get_policy_validators()['FindConsolidatableAddressGroups']
     return consolidate_service_like_objects(profilepackage, object_friendly_type, validator_function)
