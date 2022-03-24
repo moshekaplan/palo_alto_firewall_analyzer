@@ -6,6 +6,7 @@ from . import find_consolidatable_addresses_and_groups
 from . import find_consolidatable_service_and_groups
 from . import find_equivalent_objects
 from . import find_shadowing_objects
+from . import fqdn_in_ip
 from . import misleading_objects
 from . import shadowing_addresses_and_groups
 from . import similar_objects
