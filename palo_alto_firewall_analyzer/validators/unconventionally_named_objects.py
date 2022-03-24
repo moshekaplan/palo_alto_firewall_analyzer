@@ -47,3 +47,67 @@ def find_unconventional_services(profilepackage):
                 text = f"Device Group {device_group}'s Service {service_name} should instead be named {calculated_name}"
                 badentries.append(BadEntry(data=[service_entry, calculated_name], text=text, device_group=device_group, entry_type='Services'))
     return badentries
+
+
+@register_policy_validator("UnconventionallyNamedAddresses", "Address objects that don't match the configured naming convention")
+def find_unconventional_services(profilepackage):
+    device_groups = profilepackage.device_groups
+    pan_config = profilepackage.pan_config
+
+    fqdn_name_format = profilepackage.settings.get('fqdn name format')
+    range_name_format = profilepackage.settings.get('range name format')
+    wildcard_name_format = profilepackage.settings.get('wildcard name format')
+    host_name_format = profilepackage.settings.get('host name format')
+    net_name_format = profilepackage.settings.get('net name format')
+    if not fqdn_name_format or not host_name_format or not net_name_format or not range_name_format or not wildcard_name_format:
+        return []
+
+    badentries = []
+
+    print("*"*80)
+    print("Checking for misleading Address objects")
+
+    ADDRESS_TYPES = ('fqdn', 'ip-netmask', 'ip-range', 'ip-wildcard')
+    for i, device_group in enumerate(device_groups):
+        print(f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address objects")
+        for address_entry in pan_config.get_devicegroup_object('Addresses', device_group):
+            # For simplicity, convert the XML object to a dict:
+            address_dict = xml_object_to_dict(address_entry)
+            address_name = address_dict['entry']['@name']
+
+            for address_t in ADDRESS_TYPES:
+                if address_t in address_dict['entry'].keys():
+                    address_type = address_t
+                    break
+            else:
+                # This should not be possible!
+                continue
+
+            address_fields = {}
+            if address_type == 'fqdn':
+                address_fields['fqdn'] = address_dict['entry']['fqdn']
+                calculated_name = fqdn_name_format.format(**address_fields)
+            elif address_type == 'ip-range':
+                address_fields['range'] = address_dict['entry']['ip-range']
+                calculated_name = range_name_format.format(**address_fields)
+            elif address_type == 'ip-wildcard':
+                address_fields['mask'] = address_dict['entry']['ip-wildcard']
+                calculated_name = wildcard_name_format.format(**address_fields)
+            elif address_type == 'ip-netmask':
+                address_fields['host'] = address_dict['entry']['ip-netmask'].split('/', 1)[0]
+                if '/' in address_dict['entry']['ip-netmask']:
+                    address_fields['network'] = address_dict['entry']['ip-netmask'].split('/', 1)[1]
+                else:
+                    address_fields['network'] = ''
+
+                # We'll use the host name pattern for /32's or entries without a netmask:
+                is_host = '/' not in address_dict['entry']['ip-netmask'] or ('.' in address_dict['entry']['ip-netmask'] and '/32' in address_dict['entry']['ip-netmask']) or (':' in address_dict['entry']['ip-netmask'] and '/128' in address_dict['entry']['ip-netmask'])
+                if is_host:
+                    calculated_name = host_name_format.format(**address_fields)
+                else:
+                    calculated_name = net_name_format.format(**address_fields)
+
+            if address_name != calculated_name:
+                text = f"Device Group {device_group}'s Address {address_name} should instead be named {calculated_name}"
+                badentries.append(BadEntry(data=[address_entry, calculated_name], text=text, device_group=device_group, entry_type='Addresses'))
+    return badentries
