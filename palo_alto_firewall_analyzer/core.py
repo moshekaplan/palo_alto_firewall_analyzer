@@ -138,6 +138,14 @@ def cached_dns_lookup(domain):
 
 
 @functools.lru_cache(maxsize=None)
+def cached_fqdn_lookup(domain):
+    try:
+        return socket.getfqdn(domain)
+    except socket.gaierror:
+        return None
+
+
+@functools.lru_cache(maxsize=None)
 def xml_object_to_dict(xml_obj):
     obj_xml_string = xml.etree.ElementTree.tostring(xml_obj)
     obj_dict = xmltodict.parse(obj_xml_string)
