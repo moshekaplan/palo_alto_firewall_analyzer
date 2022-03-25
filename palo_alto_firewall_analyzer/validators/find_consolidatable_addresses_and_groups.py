@@ -1,4 +1,6 @@
 import collections
+import copy
+
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator, get_policy_validators, xml_object_to_dict
 
@@ -56,12 +58,21 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
                 if member_element.text in addresses_to_replace:
                     addressgroups_needing_replacement += [(child_dg, 'AddressGroups', addressgroup)]
                     break
-        # Then check all of the policies
+        # Then check all of the policy's referenced members
+        xml_paths = ['./*/member',
+                     './*/dynamic-ip-and-port/translated-address/member',
+                     './*/translated-address',
+                     './*/static-ip/translated-address']
         for policytype in pan_config.SUPPORTED_POLICY_TYPES:
             for policy_entry in pan_config.get_devicegroup_policy(policytype, child_dg):
-                for address_member_element in policy_entry.findall('./*/member'):
-                    if address_member_element.text in addresses_to_replace:
-                        policies_needing_replacement += [(child_dg, policytype, policy_entry)]
+                found = False
+                for xml_path in xml_paths:
+                    for address_member_element in policy_entry.findall(xml_path):
+                        if address_member_element.text in addresses_to_replace:
+                            policies_needing_replacement += [(child_dg, policytype, policy_entry)]
+                            found = True
+                            break
+                    if found:
                         break
     return addressgroups_needing_replacement, policies_needing_replacement
 
@@ -100,6 +111,41 @@ def replace_addressgroup_contents(addressgroups_needing_replacement, address_to_
         badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type))
     return badentries
 
+def replace_member_contents(address_like_entries, address_to_replacement, replacements_made):
+    replacements_made = copy.deepcopy(replacements_made)
+    # member_entry is either a string for a single object, or a list if there
+    # are two or more objects
+    if isinstance(address_like_entries, str):
+        if address_like_entries in address_to_replacement:
+            replacements_made[address_like_entries] = address_to_replacement[address_like_entries]
+            return address_to_replacement[address_like_entries], replacements_made
+        else:
+            return address_like_entries, replacements_made
+    else:
+        # Iterate through the policy's members to see which need to be replaced, and
+        # with what. Then store what changed in replacements_made
+        new_addresses = []
+        for member in address_like_entries:
+            if member in new_addresses:
+                # Member is already present, nothing to do
+                continue
+            elif member not in address_to_replacement:
+                # Member is not present and doesn't need to be replaced, so keep it as is:
+                new_addresses.append(member)
+            elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
+                # Member needs to be replaced, and replacement is not already present, so add it:
+                replacements_made[member] = address_to_replacement[member]
+                new_addresses.append(address_to_replacement[member])
+            else:
+                # Member needs to be replaced, but replacement is already present, so nothing to do:
+                continue
+        # Note that it's possible for there to be no replacements made, because the replacing was
+        # only needed in 'source', not 'destination', or vice-versa
+        # If no replacements were made, than object_policy_dict[direction]['member'] = new_addresses will not
+        # actually result in any change - but that's fine, because it's still one API request for the
+        # other members and since this hasn't modified, it won't muddy up the diff
+        return new_addresses, replacements_made
+
 
 def replace_policy_contents(policies_needing_replacement, address_to_replacement):
     badentries = []
@@ -107,37 +153,19 @@ def replace_policy_contents(policies_needing_replacement, address_to_replacement
         object_policy_dict = xml_object_to_dict(policy_entry)['entry']
         replacements_made = {}
         for direction in ('source', 'destination'):
-            # If it's a policy with only one member, it'll be parsed as a string, not a list
-            if isinstance(object_policy_dict[direction]['member'], str):
-                # Test if this is true
-                member_to_replace = object_policy_dict[direction]['member']
-                if member_to_replace in address_to_replacement:
-                    replacements_made[member_to_replace] = address_to_replacement[member_to_replace]
-                    object_policy_dict[direction]['member'] = address_to_replacement[member_to_replace]
-            else:
-                # Iterate through the policy's members to see which need to be replaced, and
-                # with what. Then store what changed in replacements_made
-                new_addresses = []
-                for member in object_policy_dict[direction]['member']:
-                    if member in new_addresses:
-                        # Member is already present, nothing to do
-                        continue
-                    elif member not in address_to_replacement:
-                        # Member is not present and doesn't need to be replaced, so keep it as is:
-                        new_addresses.append(member)
-                    elif member in address_to_replacement and address_to_replacement[member] not in new_addresses:
-                        # Member needs to be replaced, and replacement is not already present, so add it:
-                        replacements_made[member] = address_to_replacement[member]
-                        new_addresses.append(address_to_replacement[member])
-                    else:
-                        # Member needs to be replaced, but replacement is already present, so nothing to do:
-                        continue
-                # Note that it's possible for there to be no replacements made, because the replacing was
-                # only needed in 'source', not 'destination', or vice-versa
-                # If no replacements were made, than object_policy_dict[direction]['member'] = new_addresses will not
-                # actually result in any change - but that's fine, because it's still one API request for the
-                # other members and since this hasn't modified, it won't muddy up the diff
-                object_policy_dict[direction]['member'] = new_addresses
+            object_policy_dict[direction]['member'], replacements_made = replace_member_contents(object_policy_dict[direction]['member'], address_to_replacement, replacements_made)
+
+        # Extra places to check for NAT objects:
+        if policy_type in ("NATPreRules", "NATPostRules"):
+            for translation in ('source-translation', 'destination-translation'):
+                if translation not in object_policy_dict:
+                    continue
+                if object_policy_dict[translation].get('translated-address'):
+                    object_policy_dict[translation]['translated-address'], replacements_made = replace_member_contents(object_policy_dict[translation]['translated-address'], address_to_replacement, replacements_made)
+                if object_policy_dict[translation].get('dynamic-ip-and-port', {}).get('translated-address', {}).get('member'):
+                    object_policy_dict[translation]['dynamic-ip-and-port']['translated-address']['member'], replacements_made = replace_member_contents(object_policy_dict[translation]['dynamic-ip-and-port']['translated-address']['member'], address_to_replacement, replacements_made)
+                if object_policy_dict[translation].get('static-ip', {}).get('translated-address', {}).get('member'):
+                    object_policy_dict[translation]['static-ip']['translated-address']['member'], replacements_made = replace_member_contents(object_policy_dict[translation]['static-ip']['translated-address']['member'], address_to_replacement, replacements_made)
         text = f"Replace the following Address members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
         badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
     return badentries
