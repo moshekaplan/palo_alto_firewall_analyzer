@@ -7,7 +7,7 @@ from palo_alto_firewall_analyzer.core import ProfilePackage, ConfigurationSettin
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 
-class TestBadHostname(unittest.TestCase):
+class TestUnqualifiedFQDN(unittest.TestCase):
     @staticmethod
     def create_profilepackage(addresses, ignored_dns_prefixes):
         device_groups = ["shared"]
