@@ -138,6 +138,14 @@ def cached_dns_lookup(domain):
 
 
 @functools.lru_cache(maxsize=None)
+def cached_dns_ex_lookup(domain):
+    try:
+        return socket.gethostbyname_ex(domain)
+    except socket.gaierror:
+        return (None, [], [])
+
+
+@functools.lru_cache(maxsize=None)
 def cached_fqdn_lookup(domain):
     try:
         return socket.getfqdn(domain)
