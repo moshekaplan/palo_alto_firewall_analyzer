@@ -2,7 +2,7 @@ from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_lookup, regist
 
 import re
 
-@register_policy_validator("FQDNinIP", "Address contains an FQDN that is actually an IP address")
+@register_policy_validator("FQDNContainsIP", "Address contains an FQDN that is actually an IP address")
 def find_badhostname(profilepackage):
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config

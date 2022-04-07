@@ -7,7 +7,7 @@ from palo_alto_firewall_analyzer.core import ProfilePackage, ConfigurationSettin
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 
 
-class TestFQDNinIP(unittest.TestCase):
+class TestFQDNContainsIP(unittest.TestCase):
     @staticmethod
     def create_profilepackage(pan_config):
         device_groups = ["shared"]
@@ -44,7 +44,7 @@ class TestFQDNinIP(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         profilepackage = self.create_profilepackage(pan_config)
 
-        _, _, validator_function = get_policy_validators()['FQDNinIP']
+        _, _, validator_function = get_policy_validators()['FQDNContainsIP']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].data.get('name'), 'fqdn_with_ip')

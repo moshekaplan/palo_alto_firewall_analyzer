@@ -47,6 +47,18 @@ Consolidate Service objects so there is only one object for each Service:
 * Delete the now-unused Service objects: `python pan_policy_fixer --all --fixer DeleteUnusedServices`
 * Define a convention in the config file, then rename to fit the naming convention: `python pan_policy_fixer --all --fixer RenameUnconventionallyNamedServices`
 
+### Consolidate Address Objects
+Consolidate Address objects so there is only one object for each target:
+* Delete unused Address objects: `python pan_policy_fixer.py --all --fixer DeleteUnusedAddresses`
+* Delete Address objects with FQDNs that don't resolve: `python pan_policy_validator.py --all --validator BadHostname`
+* Check if any Address objects have IPs in FQDNs: `python pan_policy_validator.py --all --validator FQDNContainsIP`
+* Check if any Address objects have misleading names: `python pan_policy_validator.py --all --validator MisleadingAddresses`
+* Replace Address objects using IPs with FQDNs: `python pan_policy_validator.py --all --fixer FixIPWithResolvingFQDN`
+* Consolidate Address objects in use: `python pan_policy_fixer.py --all --fixer ConsolidateAddresses`
+* Delete the now-unused Address objects: `python pan_policy_fixer.py --all --fixer DeleteUnusedAddresses`
+* Make all FQDN objects use FQDNs: `python pan_policy_validator.py --all --fixer FixUnqualifiedFQDN`
+* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_policy_fixer --all --fixer RenameUnconventionallyNamedAddresses`
+
 
 ## Known Issues
 
