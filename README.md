@@ -36,6 +36,18 @@ and will prompt you for credentials and save the retrieved API key to "API_KEY.t
 If you're not sure where to start, I recommend downloading an XML file from:
 `Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_policy_validator.py --all --xml 12345.xml`
 
+## Common Workflows
+There are a few common workflows to clean the firewall configuration:
+
+### Consolidate Service Objects
+Consolidate Service objects so there is only one object for each Service:
+* Delete unused Service objects: `python pan_policy_fixer --all --fixer DeleteUnusedServices`
+* Check if any Service objects have misleading names: `python pan_policy_validator --all --validator MisleadingServices`
+* Consolidate service objects in use: `python pan_policy_fixer --all --fixer ConsolidateServices`
+* Delete the now-unused Service objects: `python pan_policy_fixer --all --fixer DeleteUnusedServices`
+* Define a convention in the config file, then rename to fit the naming convention: `python pan_policy_fixer --all --fixer RenameUnconventionallyNamedServices`
+
+
 ## Known Issues
 
 The validators for checking zones (ExtaZones, MissingZones, and ExtraRules) all
