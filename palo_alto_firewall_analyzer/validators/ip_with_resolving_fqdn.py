@@ -12,10 +12,10 @@ def find_IPandFQDN(profilepackage):
 
     print("*" * 80)
 
-    fqdns = []
-    ips = collections.defaultdict(list)
-    ips_fqdns_resolve_to = collections.Counter()
     for i, device_group in enumerate(device_groups):
+        fqdns = []
+        ips = collections.defaultdict(list)
+        ips_fqdns_resolve_to = collections.Counter()
         print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
         for entry in pan_config.get_devicegroup_object('Addresses', device_group):
             entry_name = entry.get('name')
@@ -35,11 +35,11 @@ def find_IPandFQDN(profilepackage):
                     fqdns.append((entry_name, fqdn, ip))
                     ips_fqdns_resolve_to[ip] += 1
 
-    # Now that we have the data, we're ready to review the fqdns for what's present in the IPs:
-    for fqdn_name, fqdn, ip in fqdns:
-        # Skip IPs that have multiple FQDNs on the firewall resolve to them, because it's ambiguous which fqdn to use
-        if ip in ips and ips_fqdns_resolve_to[ip] == 1:
-            for address_name, ipnetmask_value, address_entry in ips[ip]:
-                text = f"Device Group {device_group}'s address {address_name} with IP {ipnetmask_value} can be replaced with an fqdn of {fqdn}"
-                badentries.append(BadEntry(data=(address_entry, fqdn), text=text, device_group=device_group, entry_type='Addresses'))
+        # Now that we have the data, we're ready to review the fqdns for what's present in the IPs:
+        for fqdn_name, fqdn, ip in fqdns:
+            # Skip IPs that have multiple FQDNs on the firewall resolve to them, because it's ambiguous which fqdn to use
+            if ip in ips and ips_fqdns_resolve_to[ip] == 1:
+                for address_name, ipnetmask_value, address_entry in ips[ip]:
+                    text = f"Device Group {device_group}'s address {address_name} with IP {ipnetmask_value} can be replaced with an fqdn of {fqdn}"
+                    badentries.append(BadEntry(data=(address_entry, fqdn), text=text, device_group=device_group, entry_type='Addresses'))
     return badentries
