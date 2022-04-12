@@ -58,7 +58,7 @@ class TestRedundantRuleMembers(unittest.TestCase):
         pan_config = PanConfig(test_xml)
 
         profilepackage = self.create_profilepackage(pan_config)
-        _, _, validator_function = get_policy_validators()['RedundantRuleMembers']
+        _, _, validator_function = get_policy_validators()['RedundantRuleAddresses']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         ruletype, rule_entry, members_to_remove = results[0].data
