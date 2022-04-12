@@ -48,10 +48,15 @@ class PanConfig:
                 device_group_hierarchy_children[parent.text].append(name)
                 device_group_hierarchy_parent[name] = parent.text
 
-        # The Device Group with a child and no parents must be the root Device Group
-        shared_child = list(set(device_group_hierarchy_children.keys()) - set(device_group_hierarchy_parent.keys()))[0]
-        device_group_hierarchy_children['shared'] = [shared_child]
-        device_group_hierarchy_parent[shared_child] = 'shared'
+        # The Device Group with no parents must be the root Device Group
+        dg_without_parents = list(set(device_group_hierarchy_children.keys()) - set(device_group_hierarchy_parent.keys()))
+        if dg_without_parents:
+            device_group_hierarchy_children['shared'] = [dg_without_parents[0]]
+            device_group_hierarchy_parent[dg_without_parents[0]] = 'shared'
+        else:
+            # Only one device group in use. Just reference it directly:
+            device_group_hierarchy_children['shared'] = [name]
+            device_group_hierarchy_parent[name] = 'shared'
 
         return device_group_hierarchy_children, device_group_hierarchy_parent
 
@@ -139,6 +144,7 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_devicegroup_object(self, object_type, device_group):
+        '''Returns the objects in a specific device group'''
         if object_type not in self.SUPPORTED_OBJECT_TYPES:
             raise Exception(
                 f"Invalid object_type '{object_type}' ! object_type must be one of {self.SUPPORTED_OBJECT_TYPES.keys()}")
@@ -153,6 +159,19 @@ class PanConfig:
         xpath = xpath_location_prefix + self.SUPPORTED_OBJECT_TYPES[object_type]
         return self.configroot.findall(xpath)
 
+
+    def get_devicegroup_all_objects(self, object_type, device_group):
+        '''Returns all objects available to a device group including those from parent objects'''
+        _, device_group_hierarchy_parent = self.get_device_groups_hierarchy()
+        all_objects = []
+        current_dg = device_group
+        all_objects += self.get_devicegroup_object(object_type, current_dg)
+        while current_dg in device_group_hierarchy_parent:
+            current_dg = device_group_hierarchy_parent[current_dg]
+            all_objects += self.get_devicegroup_object(object_type, current_dg)
+        return all_objects
+
+
     @functools.lru_cache(maxsize=None)
     def get_major_version(self):
         # Returns in the form '10.0.0'
@@ -160,6 +179,7 @@ class PanConfig:
         # API uses the form: '10.0'
         major_version = full_version.rsplit('.', 1)[0]
         return major_version
+
 
 def main():
     fname = "config_pretty.xml"
