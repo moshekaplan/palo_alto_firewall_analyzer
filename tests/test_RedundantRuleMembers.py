@@ -61,7 +61,7 @@ class TestRedundantRuleMembers(unittest.TestCase):
         _, _, validator_function = get_policy_validators()['RedundantRuleMembers']
         results = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].data, ('SecurityPreRules', 'same_zone_rule', 'source', 'ip-127.0.0.2'))
+        self.assertEqual(results[0].data, ('SecurityPreRules', 'same_zone_rule', {'source': [('ip-127.0.0.2', 'address_addressgroup1')]}))
 
 
 if __name__ == "__main__":
