@@ -70,5 +70,5 @@ def find_redundant_members(profilepackage):
                         entries_string = ", ".join([f"'{entry[0]}' is in '{entry[1]}'" for entry in entries])
                         direction_string = f"For {direction}: {entries_string}"
                         text += direction_string
-                    badentries.append(BadEntry(data=(ruletype, rule_name, members_to_remove), text=text, device_group=device_group, entry_type='Address'))
+                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_remove), text=text, device_group=device_group, entry_type='Address'))
     return badentries
