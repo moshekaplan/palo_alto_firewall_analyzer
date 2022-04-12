@@ -2,16 +2,16 @@ from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_v
 from palo_alto_firewall_analyzer import pan_api
 
 
-@register_policy_fixer("RemoveRedundantRuleMembers", "Remove redundant rule members")
+@register_policy_fixer("RemoveRedundantRuleAddresses", "Remove redundant rule addresses")
 def remove_redundant_rule_members(profilepackage):
     panorama = profilepackage.settings.get("Panorama")
     api_key = profilepackage.api_key
     pan_config = profilepackage.pan_config
     version = pan_config.get_major_version()
 
-    _, _, validator_function = get_policy_validators()['RedundantRuleMembers']
+    _, _, validator_function = get_policy_validators()['RedundantRuleAddresses']
     print("*"*80)
-    print("Checking for redundant rule members")
+    print("Checking for redundant rule addresses")
 
     rules_to_update = validator_function(profilepackage)
 
@@ -19,11 +19,11 @@ def remove_redundant_rule_members(profilepackage):
     for badentry in rules_to_update:
         object_policy_dg = badentry.device_group
         rule_type, rule_entry, members_to_remove = badentry.data
-        rule_dict = xml_object_to_dict(rule_entry)
+        rule_dict = xml_object_to_dict(rule_entry)['entry']
         for direction, member_and_containing_pairs in members_to_remove.items():
             for member_and_containing in member_and_containing_pairs:
                 member, _ = member_and_containing
-                rule_dict['entry'][direction]['member'].remove(member)
+                rule_dict[direction]['member'].remove(member)
         pan_api.update_devicegroup_policy(panorama, version, api_key, rule_dict, rule_type, object_policy_dg)
     pan_api.validate_commit(panorama, api_key)
     print("Replacement complete. Please commit in the firewall.")
