@@ -21,9 +21,10 @@ def remove_redundant_rule_members(profilepackage):
         rule_type, rule_entry, members_to_remove = badentry.data
         rule_dict = xml_object_to_dict(rule_entry)['entry']
         for direction, member_and_containing_pairs in members_to_remove.items():
-            for member_and_containing in member_and_containing_pairs:
-                member, _ = member_and_containing
-                rule_dict[direction]['member'].remove(member)
+            for member, _ in member_and_containing_pairs:
+                # It's possible a member is contained in two of a rule's address groups
+                if member in rule_dict[direction]['member']:
+                    rule_dict[direction]['member'].remove(member)
         pan_api.update_devicegroup_policy(panorama, version, api_key, rule_dict, rule_type, object_policy_dg)
     pan_api.validate_commit(panorama, api_key)
     print("Replacement complete. Please commit in the firewall.")
