@@ -88,10 +88,10 @@ def find_redundant_members(profilepackage):
 
     for i, device_group in enumerate(device_groups):
         print(f"Checking Device group {device_group}")
-        # Build the list of all AddressGroups:
+        # Build the list of all ServiceGroups:
         object_type = 'ServiceGroups'
         service_member_xpath = './members/member'
-        servicegroups_to_underlying_addresses = build_group_member_mapping(pan_config, device_group, object_type, service_member_xpath)
+        servicegroups_to_underlying_services = build_group_member_mapping(pan_config, device_group, object_type, service_member_xpath)
 
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             for rule_entry in pan_config.get_devicegroup_policy(ruletype, device_group):
@@ -103,12 +103,12 @@ def find_redundant_members(profilepackage):
                 service_members = [elem.text for elem in rule_entry.findall('./service/member')]
                 servicegroups_in_use = []
                 for service_like_member in service_members:
-                    if service_like_member in servicegroups_to_underlying_addresses:
+                    if service_like_member in servicegroups_to_underlying_services:
                         servicegroups_in_use += [service_like_member]
                 # See which address objects are contained within the rule's other addressgroup objects:
                 for service_like_member in service_members:
                     for sg in servicegroups_in_use:
-                        if service_like_member in servicegroups_to_underlying_addresses[sg]:
+                        if service_like_member in servicegroups_to_underlying_services[sg]:
                             members_to_remove += [(service_like_member, sg)]
 
                 if members_to_remove:
