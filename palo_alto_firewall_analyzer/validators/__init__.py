@@ -5,6 +5,7 @@ from . import find_consolidatable_addresses_and_groups
 from . import find_consolidatable_service_and_groups
 from . import find_disabled_policies
 from . import find_equivalent_objects
+from . import find_group_replacements
 from . import find_shadowing_services_and_groups
 from . import fqdn_contains_ip
 from . import ip_with_resolving_fqdn
