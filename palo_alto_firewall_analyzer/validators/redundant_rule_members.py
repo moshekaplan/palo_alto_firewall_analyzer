@@ -77,7 +77,7 @@ def find_redundant_addresses(profilepackage):
 
 
 @register_policy_validator("RedundantRuleServices", "Detects rules with redundant Service entries")
-def find_redundant_members(profilepackage):
+def find_redundant_services(profilepackage):
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
 
