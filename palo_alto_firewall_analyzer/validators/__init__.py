@@ -11,6 +11,7 @@ from . import ip_with_resolving_fqdn
 from . import misleading_objects
 from . import redundant_rule_members
 from . import shadowing_addresses_and_groups
+from . import shadowing_rules
 from . import shadowing_services_and_groups
 from . import similar_objects
 from . import unconventionally_named_objects
