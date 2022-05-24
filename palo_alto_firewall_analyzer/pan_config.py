@@ -159,7 +159,6 @@ class PanConfig:
         xpath = xpath_location_prefix + self.SUPPORTED_OBJECT_TYPES[object_type]
         return self.configroot.findall(xpath)
 
-
     def get_devicegroup_all_objects(self, object_type, device_group):
         '''Returns all objects available to a device group including those from parent objects'''
         _, device_group_hierarchy_parent = self.get_device_groups_hierarchy()
@@ -170,7 +169,6 @@ class PanConfig:
             current_dg = device_group_hierarchy_parent[current_dg]
             all_objects += self.get_devicegroup_object(object_type, current_dg)
         return all_objects
-
 
     @functools.lru_cache(maxsize=None)
     def get_major_version(self):
@@ -193,11 +191,12 @@ def main():
     for dg in device_groups + ['shared']:
         print(dg, pc.get_devicegroup_policy('SecurityPreRules', dg))
 
-    print ("Address Groups")
+    print("Address Groups")
     print(dg, pc.get_devicegroup_object('AddressGroups', 'shared'))
 
     global indent
     indent = 0
+
     def printRecur(root):
         """Recursively prints the tree."""
         global indent
