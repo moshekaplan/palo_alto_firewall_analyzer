@@ -44,13 +44,19 @@ def get_contained_objects(group_name, all_groups_to_members):
     return set(contained_members)
 
 
-def build_group_member_mapping(pan_config, device_group, object_type, xpath):
+def build_group_member_mapping(pan_config, device_group, object_type):
     """Creates a mapping of AddressGroup or ServiceGroup objects to the underlying objects"""
-    # Note: Same code as from group_replacements.py
+    # Note: Original code from group_replacements.py
+    object_type_to_xpaths = {'AddressGroups': ['./static/member', './dynamic/filter'],
+                             'ServiceGroups': ['./members/member'],
+                             'ApplicationGroups': ['./members/member']
+                             }
     all_groups_to_members = {}
     for group_entry in pan_config.get_devicegroup_all_objects(object_type, device_group):
         name = group_entry.get('name')
-        members = [member.text for member in group_entry.findall(xpath)]
+        members = []
+        for xpath in object_type_to_xpaths[object_type]:
+            members += [member.text for member in group_entry.findall(xpath)]
         all_groups_to_members[name] = members
 
     group_to_contained_members = {}
@@ -115,11 +121,11 @@ def transform_rules(rules, addressgroups_to_underlying_addresses, applicationgro
         rule_values['negate'] = frozenset([elem.text for elem in rule_entry.findall('./target/negate')])
         rule_values['src_zones'] = frozenset([elem.text for elem in rule_entry.findall('./from/member')])
         rule_values['src_members'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./source/member')], addressgroups_to_underlying_addresses))
-        rule_values['source_hip'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./source-hip/member')], addressgroups_to_underlying_addresses))
+        rule_values['source_hip'] = frozenset([elem.text for elem in rule_entry.findall('./source-hip/member')])
         rule_values['users'] = frozenset([elem.text for elem in rule_entry.findall('./source-user/')])
         rule_values['dest_zones'] = frozenset([elem.text for elem in rule_entry.findall('./to/member')])
         rule_values['dest_members'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./destination/member')], addressgroups_to_underlying_addresses))
-        rule_values['destination_hip'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./destination-hip/member')], addressgroups_to_underlying_addresses))
+        rule_values['destination_hip'] = frozenset([elem.text for elem in rule_entry.findall('./destination-hip/member')])
         rule_values['application'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./application/')], applicationgroups_to_underlying_services))
         rule_values['service'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./service/')], servicegroups_to_underlying_services))
         rule_values['url_category'] = frozenset([elem.text for elem in rule_entry.findall('./category/')])
@@ -158,10 +164,12 @@ def find_shadowing(device_group, transformed_rules):
         if dg != device_group:
             continue
         # Now check if this rule is shadowed by any of the preceeding rules:
+        shadowed_by = []
         for prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry, prior_rule_values in transformed_rules[:i]:
             if is_shadowing(prior_rule_values, rule_values):
-                shadowing_rules.append([(prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry),
-                                        (dg, ruletype, rule_name, rule_entry)])
+                shadowed_by += [(prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry)]
+        if shadowed_by:
+            shadowing_rules.append([(dg, ruletype, rule_name, rule_entry), shadowed_by])
     return shadowing_rules
 
 
@@ -180,23 +188,28 @@ def find_shadowing_rules(profilepackage):
         print(f"Checking Device group {device_group}")
         # As security rules are inherited from parent device groups, we'll need to check those too
         all_rules = get_all_rules_for_dg(pan_config, device_group)
+        # Filter disabled rules:
+        all_rules = [(dg, rule_type, rule) for (dg, rule_type, rule) in all_rules if rule.find("./disabled") is None or rule.find("./disabled").text != "yes"]
         if not all_rules:
             continue
-        addressgroups_to_underlying_addresses = build_group_member_mapping(pan_config, device_group, 'AddressGroups', './static/member')
-        servicegroups_to_underlying_services = build_group_member_mapping(pan_config, device_group, 'ServiceGroups', './members/member')
-        applicationgroups_to_underlying_services = build_group_member_mapping(pan_config, device_group, 'ApplicationGroups', './members/member')
+        addressgroups_to_underlying_addresses = build_group_member_mapping(pan_config, device_group, 'AddressGroups')
+        servicegroups_to_underlying_services = build_group_member_mapping(pan_config, device_group, 'ServiceGroups')
+        applicationgroups_to_underlying_services = build_group_member_mapping(pan_config, device_group, 'ApplicationGroups')
         transformed_rules = transform_rules(all_rules, addressgroups_to_underlying_addresses, applicationgroups_to_underlying_services, servicegroups_to_underlying_services)
 
         shadowing_rules = find_shadowing(device_group, transformed_rules)
 
         # Report overlapping rules
-        for prior_tuple, shadowed_tuple in shadowing_rules:
-            prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry = prior_tuple
+        for shadowed_tuple, prior_tuples in shadowing_rules:
             dg, ruletype, rule_name, rule_entry = shadowed_tuple
-
-            text = f"{dg}'s {ruletype} '{rule_name}' is shadowed by {prior_dg}'s {prior_ruletype} '{prior_rule_name}'"
+            text = f"{dg}'s {ruletype} '{rule_name}' is shadowed by: "
+            shadowing_list = []
+            for prior_tuple in prior_tuples:
+                prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry = prior_tuple
+                shadowing_list += [f"{prior_dg}'s {prior_ruletype} '{prior_rule_name}'"]
+            text += ", ".join(shadowing_list)
             print(text)
             badentries.append(
-                BadEntry(data=(prior_tuple, shadowed_tuple), text=text, device_group=device_group, entry_type=None))
+                BadEntry(data=(shadowed_tuple, prior_tuples), text=text, device_group=device_group, entry_type=None))
 
     return badentries

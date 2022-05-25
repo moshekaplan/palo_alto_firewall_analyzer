@@ -27,7 +27,7 @@ class TestShadowingRules(unittest.TestCase):
         )
         return profilepackage
 
-    def test_replaceableaddresses(self):
+    def test_shadowingrules(self):
         test_xml = """\
         <response status="success"><result><config>
           <devices><entry><device-group><entry name="test_dg">
@@ -90,12 +90,13 @@ class TestShadowingRules(unittest.TestCase):
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'test_dg')
         self.assertEqual(results[0].data[0][1], 'SecurityPreRules')
-        self.assertEqual(results[0].data[0][2], 'Rule 1')
-        self.assertEqual(results[0].data[0][3].get('name'), 'Rule 1')
-        self.assertEqual(results[0].data[1][0], 'test_dg')
-        self.assertEqual(results[0].data[1][1], 'SecurityPreRules')
-        self.assertEqual(results[0].data[1][2], 'Rule 2')
-        self.assertEqual(results[0].data[1][3].get('name'), 'Rule 2')
+        self.assertEqual(results[0].data[0][2], 'Rule 2')
+        self.assertEqual(results[0].data[0][3].get('name'), 'Rule 2')
+        self.assertEqual(len(results[0].data[1]), 1)
+        self.assertEqual(results[0].data[1][0][0], 'test_dg')
+        self.assertEqual(results[0].data[1][0][1], 'SecurityPreRules')
+        self.assertEqual(results[0].data[1][0][2], 'Rule 1')
+        self.assertEqual(results[0].data[1][0][3].get('name'), 'Rule 1')
         self.assertEqual(results[0].device_group, 'test_dg')
 
 
