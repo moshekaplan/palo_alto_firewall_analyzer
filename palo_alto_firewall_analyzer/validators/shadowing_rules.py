@@ -119,10 +119,12 @@ def transform_rules(rules, addressgroups_to_underlying_addresses, applicationgro
         rule_name = rule_entry.get('name')
         rule_values = {}
         rule_values['negate'] = frozenset([elem.text for elem in rule_entry.findall('./target/negate')])
+        rule_values['negate-source'] = frozenset([elem.text for elem in rule_entry.findall('./negate-source')])
         rule_values['src_zones'] = frozenset([elem.text for elem in rule_entry.findall('./from/member')])
         rule_values['src_members'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./source/member')], addressgroups_to_underlying_addresses))
         rule_values['source_hip'] = frozenset([elem.text for elem in rule_entry.findall('./source-hip/member')])
         rule_values['users'] = frozenset([elem.text for elem in rule_entry.findall('./source-user/')])
+        rule_values['negate-destination'] = frozenset([elem.text for elem in rule_entry.findall('./negate-destination')])
         rule_values['dest_zones'] = frozenset([elem.text for elem in rule_entry.findall('./to/member')])
         rule_values['dest_members'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./destination/member')], addressgroups_to_underlying_addresses))
         rule_values['destination_hip'] = frozenset([elem.text for elem in rule_entry.findall('./destination-hip/member')])
@@ -130,7 +132,11 @@ def transform_rules(rules, addressgroups_to_underlying_addresses, applicationgro
         rule_values['service'] = frozenset(replace_groups_with_underlying_members([elem.text for elem in rule_entry.findall('./service/')], servicegroups_to_underlying_services))
         rule_values['url_category'] = frozenset([elem.text for elem in rule_entry.findall('./category/')])
         rule_values['rule_type'] = frozenset([elem.text for elem in rule_entry.findall('./rule-type')])
-        # Default value if unspecified is 'universal'
+        # Assign default values if not present:
+        if not rule_values['negate-source']:
+            rule_values['negate-source'] = frozenset(["no"])
+        if not rule_values['negate-destination']:
+            rule_values['negate-destination'] = frozenset(["no"])
         if not rule_values['rule_type']:
             rule_values['rule_type'] = frozenset(["universal"])
         transformed_rules.append((device_group, ruletype, rule_name, rule_entry, rule_values))
