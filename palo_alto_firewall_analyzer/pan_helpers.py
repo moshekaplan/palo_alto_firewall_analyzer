@@ -12,7 +12,7 @@ def load_config_package(configuration_settings, api_key, device_group, limit, ve
     if xml_file:
         # The list of firewalls are not available from the API, so
         # these variables will remain empty
-        with open(xml_file) as fh:
+        with open(xml_file, encoding='utf-8') as fh:
             xml_config = fh.read()
         pan_config = PanConfig(xml_config, True)
         device_groups_and_firewalls = collections.defaultdict(list)
