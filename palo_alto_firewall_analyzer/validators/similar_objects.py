@@ -1,6 +1,9 @@
 import collections
+import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+
+logger = logging.getLogger(__name__)
 
 def find_local_similar_names(devicegroup_objects, device_group, object_type1, object_type2):
     """Finds objects in a single devicegroup which share a namespace and have names
@@ -41,11 +44,11 @@ def find_similar_addresses_and_groups(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for similarly-named Address and Address Group objects")
+    logger.info("*" * 80)
+    logger.info("Checking for similarly-named Address and Address Group objects")
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s address objects")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s address objects")
         badentries.extend(find_local_similar_names(devicegroup_objects, device_group, 'Addresses', 'AddressGroups'))
     return badentries
 
@@ -57,10 +60,10 @@ def find_similar_services_and_groups(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for similarly-named Service and Service Group objects")
+    logger.info("*" * 80)
+    logger.info("Checking for similarly-named Service and Service Group objects")
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Service objects")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Service objects")
         badentries.extend(find_local_similar_names(devicegroup_objects, device_group, 'Services', 'ServiceGroups'))
     return badentries

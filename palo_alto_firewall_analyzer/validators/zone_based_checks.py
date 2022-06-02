@@ -1,8 +1,11 @@
 import collections
 import ipaddress
+import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, get_single_ip_from_address, register_policy_validator, xml_object_to_dict
 from palo_alto_firewall_analyzer.pan_helpers import get_firewall_zone
+
+logger = logging.getLogger(__name__)
 
 def get_underlying_address_objects(address_group_name, name_to_address_groups, name_to_addresses):
     """
@@ -98,8 +101,8 @@ def find_missing_zones(profilepackage):
         return []
 
     badentries = []
-    print ("*"*80)
-    print ("Checking for Missing Zones")
+    logger.info ("*"*80)
+    logger.info ("Checking for Missing Zones")
     for i, device_group in enumerate(device_groups):
         firewalls = devicegroup_objects[device_group]['all_active_child_firewalls']
 
@@ -122,11 +125,11 @@ def find_missing_zones(profilepackage):
 
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             rules = devicegroup_exclusive_objects[device_group][ruletype]
-            print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
+            logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
 
             total_entries = len(rules)
             for j, entry in enumerate(rules):
-                print (f'({j+1}/{total_entries}) {entry.get("name")}')
+                logger.info (f'({j+1}/{total_entries}) {entry.get("name")}')
                 # Disabled rules can be ignored
                 if entry.find("./disabled") is not None and entry.find("./disabled").text == "yes":
                     continue
@@ -157,7 +160,7 @@ def find_missing_zones(profilepackage):
                         missing_template = "Members {members} require {zonetype} zone '{zone}'."
                         missing_text = " ".join([missing_template.format(zone=zone, members=sorted(set(calculated_zones_to_members[zone])), zonetype=zonetype) for zone in missing_zones])
                         text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' uses {zonetype} zones {zones}. " + missing_text
-                        print (text)
+                        logger.info (text)
                         badentries.append(BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype))
     return badentries
 
@@ -174,8 +177,8 @@ def find_extra_zones(profilepackage):
         return []
 
     badentries = []
-    print ("*"*80)
-    print ("Checking for Extra Zones")
+    logger.info ("*"*80)
+    logger.info ("Checking for Extra Zones")
     for i, device_group in enumerate(device_groups):
         firewalls = devicegroup_objects[device_group]['all_active_child_firewalls']
 
@@ -198,11 +201,11 @@ def find_extra_zones(profilepackage):
 
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             rules = devicegroup_exclusive_objects[device_group][ruletype]
-            print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
+            logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
 
             total_entries = len(rules)
             for j, entry in enumerate(rules):
-                print (f'({j+1}/{total_entries}) {entry.get("name")}')
+                logger.info (f'({j+1}/{total_entries}) {entry.get("name")}')
                 # Disabled rules can be ignored
                 if entry.find("./disabled") is not None and entry.find("./disabled").text == "yes":
                     continue
@@ -239,7 +242,7 @@ def find_extra_zones(profilepackage):
                     extra_zones = sorted(set(zones) - set(calculated_zones_to_members))
                     if extra_zones:
                         text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' uses {zonetype} zones {zones}. The {zonetype} zones should be {sorted(calculated_zones_to_members)}. The following {zonetype} zones are not needed: {extra_zones}"
-                        print (text)
+                        logger.info (text)
                         badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype) )
     return badentries
 
@@ -256,8 +259,8 @@ def find_extra_rules(profilepackage):
         return []
 
     badentries = []
-    print ("*"*80)
-    print ("Checking for Extra rules")
+    logger.info ("*"*80)
+    logger.info ("Checking for Extra rules")
     for i, device_group in enumerate(device_groups):
         firewalls = devicegroup_objects[device_group]['all_active_child_firewalls']
 
@@ -280,11 +283,11 @@ def find_extra_rules(profilepackage):
 
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             rules = devicegroup_exclusive_objects[device_group][ruletype]
-            print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
+            logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
 
             total_entries = len(rules)
             for j, entry in enumerate(rules):
-                print (f'({j+1}/{total_entries}) {entry.get("name")}')
+                logger.info (f'({j+1}/{total_entries}) {entry.get("name")}')
                 # Disabled rules can be ignored
                 if entry.find("./disabled") is not None and entry.find("./disabled").text == "yes":
                     continue
@@ -352,6 +355,6 @@ def find_extra_rules(profilepackage):
 
                 if len(calculated_src_zones) == 1 and calculated_src_zones == calculated_dest_zones:
                     text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' was calculated to only need the same source and dest zone of '{list(calculated_dest_zones)[0]}'."
-                    print (text)
+                    logger.info (text)
                     badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype) )
     return badentries

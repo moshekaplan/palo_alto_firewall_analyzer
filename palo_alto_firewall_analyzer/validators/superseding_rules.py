@@ -1,5 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 def get_all_rules_for_dg(device_group, device_group_hierarchy_parent, devicegroup_objects):
     """
@@ -101,11 +104,11 @@ def find_superseding_rules(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for Superseding rules")
+    logger.info("*" * 80)
+    logger.info("Checking for Superseding rules")
 
     for i, device_group in enumerate(device_groups):
-        print(f"Checking Device group {device_group}")
+        logger.info(f"Checking Device group {device_group}")
         # As security rules are inherited from parent device groups, we'll need to check those too
         all_rules = get_all_rules_for_dg(device_group, device_group_hierarchy_parent, devicegroup_objects)
         transformed_rules = transform_rules(all_rules)
@@ -117,7 +120,7 @@ def find_superseding_rules(profilepackage):
             dg, ruletype, rule_name, rule_entry = superseding_tuple
 
             text = f"{prior_dg}'s {prior_ruletype} '{prior_rule_name}' is superseded by {dg}'s {ruletype} '{rule_name}'"
-            print(text)
+            logger.debug(text)
             badentries.append(
                 BadEntry(data=(prior_tuple, superseding_tuple), text=text, device_group=device_group, entry_type=None))
 

@@ -1,28 +1,27 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("BadLogSetting", "Rule uses an incorrect log profile")
 def find_bad_log_setting(profilepackage):
     mandated_log_profile = profilepackage.settings['Mandated Logging Profile']
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
-    devicegroup_exclusive_objects = profilepackage.devicegroup_exclusive_objects
-    verbose = profilepackage.verbose
 
     if not mandated_log_profile:
         return []
 
     badentries = []
 
-    if verbose:
-        print("*" * 80)
-        print("Checking for incorrect log settings")
+    logger.info("*" * 80)
+    logger.info("Checking for incorrect log settings")
 
     for i, device_group in enumerate(device_groups):
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             rules = pan_config.get_devicegroup_policy(ruletype, device_group)
-            if verbose:
-                print(f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
+            logger.info(f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
 
             for entry in rules:
                 rule_name = entry.get('name')
@@ -44,13 +43,11 @@ def find_bad_log_setting(profilepackage):
                     continue
                 elif log_setting is None:
                     text = f"Device Group {device_group}'s {ruletype} '{rule_name}' doesn't use any log profile!"
-                    if verbose:
-                        print(text)
+                    logger.debug(text)
                     badentries.append(BadEntry(data=[entry, mandated_log_profile], text=text, device_group=device_group, entry_type=ruletype))
                 elif log_setting != mandated_log_profile:
                     text = f"Device Group {device_group}'s {ruletype} '{rule_name}' doesn't use log profile '{mandated_log_profile}', instead it uses '{log_setting}'"
-                    if verbose:
-                        print(text)
+                    logger.debug(text)
                     badentries.append(BadEntry(data=[entry, mandated_log_profile], text=text, device_group=device_group, entry_type=ruletype))
 
     return badentries

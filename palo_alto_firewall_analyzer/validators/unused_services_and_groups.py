@@ -1,4 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+
+logger = logging.getLogger(__name__)
 
 def find_unused_service_like_object(profilepackage, object_type, object_friendly_type):
     device_groups = profilepackage.device_groups
@@ -12,11 +16,11 @@ def find_unused_service_like_object(profilepackage, object_type, object_friendly
 
     badentries = []
 
-    print("*" * 80)
-    print(f"Checking for unused {object_friendly_type} objects")
+    logger.info("*" * 80)
+    logger.info(f"Checking for unused {object_friendly_type} objects")
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {object_friendly_type} objects")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {object_friendly_type} objects")
         services = {entry.get('name'): entry for entry in devicegroup_objects[device_group][object_type]}
 
         # A Services object can be used by any child device group's Services Group or Policy. Need to check all of them.

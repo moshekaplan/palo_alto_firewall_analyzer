@@ -1,4 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+
+logger = logging.getLogger(__name__)
 
 def find_unused_security_profile_groups(profilepackage, object_type, object_friendly_type):
     device_groups = profilepackage.device_groups
@@ -11,11 +15,11 @@ def find_unused_security_profile_groups(profilepackage, object_type, object_frie
 
     badentries = []
 
-    print("*" * 80)
-    print(f"Checking for unused {object_friendly_type} objects")
+    logger.info("*" * 80)
+    logger.info(f"Checking for unused {object_friendly_type} objects")
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {object_friendly_type} objects")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {object_friendly_type} objects")
         groups = {entry.get('name'): entry for entry in pan_config.get_devicegroup_object(object_type, device_group)}
         if not groups:
             continue

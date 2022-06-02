@@ -1,17 +1,20 @@
 import collections
 import functools
 import getpass
+import logging
 
 from palo_alto_firewall_analyzer import pan_api
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 from palo_alto_firewall_analyzer.core import squash_all_devicegroups, ProfilePackage
 
+logger = logging.getLogger(__name__)
 
-def load_config_package(configuration_settings, api_key, device_group, limit, verbose, no_api, xml_file=None):
 
+def load_config_package(configuration_settings, api_key, device_group, limit, no_api, xml_file=None):
     if xml_file:
         # The list of firewalls are not available from the API, so
         # these variables will remain empty
+        logger.debug(f"Loading configuration from XML file: {xml_file}")
         with open(xml_file, encoding='utf-8') as fh:
             xml_config = fh.read()
         pan_config = PanConfig(xml_config, True)
@@ -91,7 +94,6 @@ def load_config_package(configuration_settings, api_key, device_group, limit, ve
         devicegroup_objects=devicegroup_objects,
         devicegroup_exclusive_objects=devicegroup_exclusive_objects,
         rule_limit_enabled=rule_limit_enabled,
-        verbose=verbose,
         no_api=no_api
     )
     return profilepackage
@@ -105,12 +107,12 @@ def get_firewall_zone(firewall, api_key, ip):
 
 
 def get_and_save_API_key(output):
-    print("Please enter your credentials into the prompts to obtain an API key")
+    logger.info("Please enter your credentials into the prompts to obtain an API key")
     panorama = getpass.getpass(prompt="Panorama Hostname: ")
     username = getpass.getpass(prompt="Username: ")
     password = getpass.getpass(prompt="Password: ")
     api_key = pan_api.get_API_key(panorama, username, password)
     with open(output, 'w') as fh:
         fh.write(api_key)
-    print(f"Successfully obtained an API key and stored it to {output}")
+    logger.info(f"Successfully obtained an API key and stored it to {output}")
     return api_key

@@ -1,7 +1,9 @@
 import collections
+import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_ex_lookup, register_policy_validator, xml_object_to_dict
 
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("IPWithResolvingFQDN", "Address object contains an IP that an existing FQDN resolves to")
 def find_IPandFQDN(profilepackage):
@@ -10,13 +12,13 @@ def find_IPandFQDN(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
+    logger.info("*" * 80)
 
     for i, device_group in enumerate(device_groups):
         fqdns = []
         ips = collections.defaultdict(list)
         ips_fqdns_resolve_to = collections.Counter()
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
         for entry in pan_config.get_devicegroup_object('Addresses', device_group):
             entry_name = entry.get('name')
             entry_dict = xml_object_to_dict(entry)

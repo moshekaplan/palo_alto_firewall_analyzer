@@ -1,7 +1,10 @@
+import logging
+import re
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 from palo_alto_firewall_analyzer.core import xml_object_to_dict
 
-import re
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("MisleadingAddresses", "Address objects that have a misleading name")
 def find_misleading_addresses(profilepackage):
@@ -13,11 +16,11 @@ def find_misleading_addresses(profilepackage):
     IP_REGEX = r"((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
     badentries = []
 
-    print ("*"*80)
-    print ("Checking for misleading Address objects")
+    logger.info ("*"*80)
+    logger.info ("Checking for misleading Address objects")
 
     for i, device_group in enumerate(device_groups):
-        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address objects")
+        logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address objects")
         for address_entry in devicegroup_objects[device_group]['Addresses']:
             # For simplicity, convert the XML object to a dict:
             address_dict = xml_object_to_dict(address_entry)
@@ -63,11 +66,11 @@ def find_misleading_services(profilepackage):
 
     badentries = []
 
-    print ("*"*80)
-    print ("Checking for misleading Service objects")
+    logger.info ("*"*80)
+    logger.info ("Checking for misleading Service objects")
 
     for i, device_group in enumerate(device_groups):
-        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Service objects")
+        logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Service objects")
         for service_entry in devicegroup_objects[device_group]['Services']:
             # For simplicity, convert the XML object to a dict:
             service_dict = xml_object_to_dict(service_entry)

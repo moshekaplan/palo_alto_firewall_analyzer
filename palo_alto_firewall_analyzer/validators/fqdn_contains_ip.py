@@ -1,19 +1,22 @@
-from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_lookup, register_policy_validator, get_policy_validators
-
+import logging
 import re
 
+from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+
+logger = logging.getLogger(__name__)
+
 @register_policy_validator("FQDNContainsIP", "Address contains an FQDN that is actually an IP address")
-def find_badhostname(profilepackage):
+def fqdn_contains_ip(profilepackage):
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
 
     IP_REGEX = r"^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$"
     badentries = []
 
-    print("*" * 80)
+    logger.info("*" * 80)
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
         for entry in pan_config.get_devicegroup_object('Addresses', device_group):
             entry_name = entry.get('name')
             for fqdn_node in entry.findall('fqdn'):

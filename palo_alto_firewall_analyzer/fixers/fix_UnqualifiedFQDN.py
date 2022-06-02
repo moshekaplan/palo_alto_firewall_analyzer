@@ -1,5 +1,9 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_validators, xml_object_to_dict
 from palo_alto_firewall_analyzer import pan_api
+
+logger = logging.getLogger(__name__)
 
 @register_policy_fixer("FixUnqualifiedFQDN", "Replace hostnames with FQDNs")
 def fix_bad_log_setting(profilepackage):

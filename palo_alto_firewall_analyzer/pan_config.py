@@ -4,9 +4,12 @@ configuration file. The idea is that instead of making many API requests,
 download the XML configuration file once and retrieve the values from there.
 """
 
-import xml.etree.ElementTree
-import functools
 import collections
+import functools
+import logging
+import xml.etree.ElementTree
+
+logger = logging.getLogger(__name__)
 
 
 class PanConfig:
@@ -185,22 +188,22 @@ def main():
         data = fh.read()
         pc = PanConfig(data)
     device_groups = pc.get_device_groups()
-    print(device_groups)
-    print(pc.get_device_groups_hierarchy())
+    logger.info(device_groups)
+    logger.info(pc.get_device_groups_hierarchy())
 
     for dg in device_groups + ['shared']:
-        print(dg, pc.get_devicegroup_policy('SecurityPreRules', dg))
+        logger.info(dg, pc.get_devicegroup_policy('SecurityPreRules', dg))
 
-    print("Address Groups")
-    print(dg, pc.get_devicegroup_object('AddressGroups', 'shared'))
+    logger.info("Address Groups")
+    logger.info(dg, pc.get_devicegroup_object('AddressGroups', 'shared'))
 
     global indent
     indent = 0
 
     def printRecur(root):
-        """Recursively prints the tree."""
+        """Recursively logger.infos the tree."""
         global indent
-        print(' ' * indent + '%s: %s' % (root.tag.title(), root.attrib.get('name', root.text)))
+        logger.info(' ' * indent + '%s: %s' % (root.tag.title(), root.attrib.get('name', root.text)))
         indent += 4
         for elem in root.getchildren():
             printRecur(elem)

@@ -1,5 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("UnusedAddresses", "Address objects that aren't in use")
 def find_unused_addresses(profilepackage):
@@ -9,11 +12,11 @@ def find_unused_addresses(profilepackage):
 
     badentries = []
 
-    print ("*"*80)
-    print ("Checking for unused Address objects")
+    logger.info ("*"*80)
+    logger.info ("Checking for unused Address objects")
 
     for i, device_group in enumerate(device_groups):
-        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s address objects")
+        logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s address objects")
         addresses = {entry.get('name'):entry for entry in devicegroup_objects[device_group]['Addresses']}
 
         # An address or group can be used by any child device group's Address group or policy. Need to check all of them.
@@ -63,11 +66,11 @@ def find_unused_addressgroups(profilepackage):
 
     badentries = []
 
-    print ("*"*80)
-    print ("Checking for unused Address Group objects")
+    logger.info ("*"*80)
+    logger.info ("Checking for unused Address Group objects")
 
     for i, device_group in enumerate(device_groups):
-        print (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address Group objects")
+        logger.info (f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address Group objects")
         addressgroups = {entry.get('name'):entry for entry in devicegroup_objects[device_group]['AddressGroups']}
 
         # An address or group can be used by any child device group's Address group or policy. Need to check all of them.

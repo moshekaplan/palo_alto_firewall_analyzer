@@ -1,20 +1,23 @@
-from palo_alto_firewall_analyzer.core import BadEntry, cached_fqdn_lookup, register_policy_validator, get_policy_validators
+import logging
 
+from palo_alto_firewall_analyzer.core import BadEntry, cached_fqdn_lookup, register_policy_validator
+
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("UnqualifiedFQDN", "Address contains a hostname instead of an FQDN")
-def find_badhostname(profilepackage):
+def find_unqualified_fqdn(profilepackage):
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
     ignored_dns_prefixes = tuple([prefix.lower() for prefix in profilepackage.settings.get('Ignored DNS Prefixes','').split(',')])
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for FQDN entries that are hostnames and not FQDNs")
+    logger.info("*" * 80)
+    logger.info("Checking for FQDN entries that are hostnames and not FQDNs")
 
     bad_address_objects = set()
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
         for entry in devicegroup_objects[device_group]['Addresses']:
             entry_name = entry.get('name')
             for fqdn_node in entry.findall('fqdn'):

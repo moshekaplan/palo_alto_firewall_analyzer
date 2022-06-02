@@ -1,12 +1,14 @@
 import collections
 import functools
 import json
+import logging
 import xml.etree.ElementTree
 
 import xmltodict
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 def normalize_address(obj_dict):
     # Append /32 to IPv4 addresses
@@ -89,11 +91,11 @@ def find_equivalent_objects(profilepackage, object_type):
 
     badentries = []
 
-    print("*" * 80)
-    print(f"Checking for equivalent {object_type} objects")
+    logger.info("*" * 80)
+    logger.info(f"Checking for equivalent {object_type} objects")
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s address objects")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s address objects")
         # An object can be inherited from any parent device group. Need to check all of them.
         # Basic strategy: Normalize all objects, then report on the subset present in this device group
         parent_dgs = []

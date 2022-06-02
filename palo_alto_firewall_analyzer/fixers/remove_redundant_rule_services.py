@@ -1,6 +1,9 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_validators, xml_object_to_dict
 from palo_alto_firewall_analyzer import pan_api
 
+logger = logging.getLogger(__name__)
 
 @register_policy_fixer("RemoveRedundantRuleServices", "Remove redundant rule services")
 def remove_redundant_rule_services(profilepackage):
@@ -10,12 +13,12 @@ def remove_redundant_rule_services(profilepackage):
     version = pan_config.get_major_version()
 
     _, _, validator_function = get_policy_validators()['RedundantRuleServices']
-    print("*"*80)
-    print("Checking for redundant rule members")
+    logger.info("*"*80)
+    logger.info("Checking for redundant rule services")
 
     rules_to_update = validator_function(profilepackage)
 
-    print(f"Replacing the contents of {len(rules_to_update)} Policies")
+    logger.info(f"Replacing the contents of {len(rules_to_update)} Policies")
     for badentry in rules_to_update:
         object_policy_dg = badentry.device_group
         rule_type, rule_entry, members_to_remove = badentry.data
@@ -26,5 +29,5 @@ def remove_redundant_rule_services(profilepackage):
                 rule_dict['service']['member'].remove(service)
         pan_api.update_devicegroup_policy(panorama, version, api_key, rule_dict, rule_type, object_policy_dg)
     pan_api.validate_commit(panorama, api_key)
-    print("Replacement complete. Please commit in the firewall.")
+    logger.info("Replacement complete. Please commit in the firewall.")
     return rules_to_update

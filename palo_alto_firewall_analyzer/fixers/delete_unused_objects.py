@@ -1,8 +1,11 @@
-from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_validators
-from palo_alto_firewall_analyzer import pan_api
+import logging
 
 import requests
 
+from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_validators
+from palo_alto_firewall_analyzer import pan_api
+
+logger = logging.getLogger(__name__)
 
 def delete_unused_object(profilepackage, object_type, object_friendly_type, validator_function):
     panorama = profilepackage.settings.get("Panorama")
@@ -10,26 +13,26 @@ def delete_unused_object(profilepackage, object_type, object_friendly_type, vali
     pan_config = profilepackage.pan_config
     version = pan_config.get_major_version()
 
-    print("*" * 80)
-    print(f"Checking for unused {object_friendly_type} objects to delete")
+    logger.info("*" * 80)
+    logger.info(f"Checking for unused {object_friendly_type} objects to delete")
 
     results_to_delete = validator_function(profilepackage)
 
     if not results_to_delete:
-        print(f"There were no {object_friendly_type} to delete")
+        logger.info(f"There were no {object_friendly_type} to delete")
         return results_to_delete
 
-    print(f"Deleting {len(results_to_delete)} unused {object_friendly_type} objects now")
+    logger.info(f"Deleting {len(results_to_delete)} unused {object_friendly_type} objects now")
     for badentry in results_to_delete:
         device_group = badentry.device_group
         object_name = badentry.data[0].get('name')
-        print(f"Deleting {object_name} from {device_group}")
+        logger.info(f"Deleting {object_name} from {device_group}")
         try:
             pan_api.delete_object(panorama, version, api_key, object_type, object_name, device_group)
         except requests.HTTPError as err:
-            print(f"Error deleting {object_name} from {device_group}: {err.response.text}")
+            logger.info(f"Error deleting {object_name} from {device_group}: {err.response.text}")
     pan_api.validate_commit(panorama, api_key)
-    print(f"Deletion of {len(results_to_delete)} unused {object_friendly_type} objects complete. Please commit in the firewall.")
+    logger.info(f"Deletion of {len(results_to_delete)} unused {object_friendly_type} objects complete. Please commit in the firewall.")
     return results_to_delete
 
 

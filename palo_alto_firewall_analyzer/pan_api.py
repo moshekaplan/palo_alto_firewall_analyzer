@@ -1,6 +1,7 @@
-import json
-import functools
 import collections
+import functools
+import json
+import logging
 import xml.etree.ElementTree
 
 import requests
@@ -9,21 +10,7 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-g_DEBUG_ENABLED = False
-g_DEBUG_FHANDLE = None
-
-
-def set_debug(debug_status, debug_fname):
-    global g_DEBUG_ENABLED
-    g_DEBUG_ENABLED = debug_status
-    global g_DEBUG_FHANDLE
-    g_DEBUG_FHANDLE = open(debug_fname, 'w')
-
-
-def write_debug(msg):
-    if g_DEBUG_ENABLED:
-        g_DEBUG_FHANDLE.write(str(msg) + '\n')
-
+logger = logging.getLogger(__name__)
 
 ###############################################################################
 # API functions
@@ -31,19 +18,19 @@ def write_debug(msg):
 
 def pan_api(firewall, method, path, params, api_key=None, data=None):
     url = "https://{hostname}{path}".format(hostname=firewall, path=path)
-    headers ={}
+    headers = {}
     if api_key:
         headers['X-PAN-KEY'] = api_key
 
     # Try 3 times, in case of weird issues where the API responds 200, but with no data:
     for i in range(3):
         response = requests.request(method, url, params=params, headers=headers, data=data, verify=False)
-        write_debug(response.url)
-        write_debug(response.status_code)
-        write_debug(response.text)
+        logger.debug(response.url)
+        logger.debug(response.status_code)
+        logger.debug(response.text)
         if response.text:
             break
-        write_debug("Error: No content! Retry count: f{i+1}")
+        logger.debug("Error: No content! Retry count: f{i+1}")
     else:
         raise Exception("API request failed 3 times!")
     response.raise_for_status()
@@ -212,6 +199,7 @@ def get_active_firewalls(panorama, api_key):
             active_devices.append(hostname)
     return sorted(active_devices)
 
+
 @functools.lru_cache(maxsize=None)
 def get_url_categories(firewall, api_key, url):
     params = {
@@ -230,6 +218,7 @@ def get_url_categories(firewall, api_key, url):
 ###############################################################################
 # REST API functions
 ###############################################################################
+
 
 SUPPORTED_POLICY_TYPES = (
     "SecurityPreRules", "SecurityPostRules",
@@ -333,6 +322,7 @@ def rename_object(panorama, version, api_key, objecttype, old_name, new_name, de
     response = pan_api(panorama, method="post", path=path, params=params, api_key=api_key)
     return response.json()
 
+
 def delete_policy(panorama, version, api_key, policy_type, policy_name, device_group):
     if policy_type not in SUPPORTED_POLICY_TYPES:
         raise Exception(f"Invalid policy_type '{policy_type}' ! polictype must be one of {SUPPORTED_POLICY_TYPES}")
@@ -384,6 +374,7 @@ def update_devicegroup_policy(panorama, version, api_key, policy, policytype, de
 
     return response.json()
 
+
 def update_devicegroup_object(panorama, version, api_key, object_entry, objecttype, device_group):
     if objecttype not in SUPPORTED_OBJECT_TYPES:
         raise Exception(f"Invalid policytype '{objecttype}'! objecttype must be one of {SUPPORTED_OBJECT_TYPES}")
@@ -415,6 +406,7 @@ def update_devicegroup_object(panorama, version, api_key, object_entry, objectty
 # Note: The following functions need to be retested prior to use
 ##################################################
 
+
 def create_object(panorama, version, api_key, object_type, object_to_create, locationtype, device_group=None):
     allowed_locationtypes = ['shared', 'device-group']
     if locationtype not in allowed_locationtypes:
@@ -437,10 +429,6 @@ def create_object(panorama, version, api_key, object_type, object_to_create, loc
 
     response = pan_api(panorama, method="post", path=path, params=params, data=data, api_key=api_key)
     return response.json()
-
-
-
-
 
 
 # Test code:

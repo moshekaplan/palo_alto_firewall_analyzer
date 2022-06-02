@@ -1,5 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, cached_dns_lookup, register_policy_validator, get_policy_validators
 
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("BadHostname", "Address contains a hostname that doesn't resolve")
 def find_badhostname(profilepackage):
@@ -9,12 +12,12 @@ def find_badhostname(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for non-resolving hostnames")
+    logger.info("*" * 80)
+    logger.info("Checking for non-resolving hostnames")
 
     bad_address_objects = set()
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Addresses")
         for entry in devicegroup_objects[device_group]['Addresses']:
             entry_name = entry.get('name')
             for fqdn_node in entry.findall('fqdn'):
@@ -44,7 +47,7 @@ def find_badhostnameusage(profilepackage):
 
     badentries = []
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Address Groups")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s Address Groups")
         for entry in devicegroup_objects[device_group]['AddressGroups']:
             address_group_members = []
             for ag_member in entry.findall('./static/member'):
@@ -58,7 +61,7 @@ def find_badhostnameusage(profilepackage):
     for i, device_group in enumerate(device_groups):
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             rules = devicegroup_exclusive_objects[device_group][ruletype]
-            print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
+            logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
 
             for entry in rules:
                 # Disabled rules can be ignored

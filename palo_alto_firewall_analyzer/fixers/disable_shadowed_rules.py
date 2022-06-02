@@ -1,6 +1,9 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import register_policy_fixer, get_policy_validators, xml_object_to_dict
 from palo_alto_firewall_analyzer import pan_api
 
+logger = logging.getLogger(__name__)
 
 @register_policy_fixer("DisableShadowedRules", "Disable shadowed rules")
 def remove_redundant_rule_services(profilepackage):
@@ -10,12 +13,12 @@ def remove_redundant_rule_services(profilepackage):
     version = pan_config.get_major_version()
 
     _, _, validator_function = get_policy_validators()['ShadowingRules']
-    print("*"*80)
-    print("Checking for redundant rule members")
+    logger.info("*"*80)
+    logger.info("Checking for shadowed rules to disable")
 
     rules_to_update = validator_function(profilepackage)
 
-    print(f"Disabling {len(rules_to_update)} Policies")
+    logger.info(f"Disabling {len(rules_to_update)} Policies")
     for badentry in rules_to_update:
         shadowed_tuple = badentry.data[0]
         device_group, ruletype, rule_name, rule_entry = shadowed_tuple
@@ -23,8 +26,8 @@ def remove_redundant_rule_services(profilepackage):
         if not disabled:
             policy_dict = xml_object_to_dict(rule_entry)['entry']
             policy_dict['disabled'] = 'yes'
-            print(f"Disabling {device_group}'s {ruletype} {rule_name}")
+            logger.info(f"Disabling {device_group}'s {ruletype} {rule_name}")
             pan_api.update_devicegroup_policy(panorama, version, api_key, policy_dict, ruletype, device_group)
     pan_api.validate_commit(panorama, api_key)
-    print("Disabling complete. Please commit in the firewall.")
+    logger.info("Disabling complete. Please commit in the firewall.")
     return rules_to_update

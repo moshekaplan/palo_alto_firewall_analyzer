@@ -1,5 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 def get_contained_objects(group_name, all_groups_to_members):
     """Given a the name of an AddressGroup or ServiceGroup, retrieves a set of all the names of objects effectively contained within"""
@@ -35,11 +38,11 @@ def find_redundant_addresses(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for redundant rule members")
+    logger.info("*" * 80)
+    logger.info("Checking for redundant rule address members")
 
     for i, device_group in enumerate(device_groups):
-        print(f"Checking Device group {device_group}")
+        logger.info(f"Checking Device group {device_group}")
         # Build the list of all AddressGroups:
         object_type = 'AddressGroups'
         addressgroup_member_xpath = './static/member'
@@ -82,11 +85,11 @@ def find_redundant_members(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for redundant rule members")
+    logger.info("*" * 80)
+    logger.info("Checking for redundant rule members")
 
     for i, device_group in enumerate(device_groups):
-        print(f"Checking Device group {device_group}")
+        logger.info(f"Checking Device group {device_group}")
         # Build the list of all ServiceGroups:
         object_type = 'ServiceGroups'
         service_member_xpath = './members/member'

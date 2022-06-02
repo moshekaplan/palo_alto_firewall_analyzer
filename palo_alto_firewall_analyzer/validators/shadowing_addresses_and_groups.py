@@ -1,7 +1,9 @@
 import collections
+import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("ShadowingAddressesAndGroups",
                            "Address and AddressGroup objects that have the same name and shadow each other")
@@ -16,11 +18,11 @@ def find_shadowing_addresses_and_groups(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for shadowing Address and Address Group objects")
+    logger.info("*" * 80)
+    logger.info("Checking for shadowing Address and Address Group objects")
 
     for i, device_group in enumerate(device_groups):
-        print(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s address objects")
+        logger.info(f"({i + 1}/{len(device_groups)}) Checking {device_group}'s address objects")
         object_entries = {}
         object_entries['Addresses'] = {entry.get('name'): (device_group, 'Addresses', entry) for entry in devicegroup_objects[device_group]['Addresses']}
         object_entries['AddressGroups'] = {entry.get('name'): (device_group, 'AddressGroups', entry) for entry in devicegroup_objects[device_group]['AddressGroups']}

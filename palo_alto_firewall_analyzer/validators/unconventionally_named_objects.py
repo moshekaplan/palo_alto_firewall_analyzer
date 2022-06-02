@@ -1,6 +1,9 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 from palo_alto_firewall_analyzer.core import xml_object_to_dict
 
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("UnconventionallyNamedServices", "Service objects that don't match the configured naming convention")
 def find_unconventional_services(profilepackage):
@@ -13,12 +16,12 @@ def find_unconventional_services(profilepackage):
 
     badentries = []
 
-    print("*"*80)
-    print("Checking for misleading Service objects")
+    logger.info("*"*80)
+    logger.info("Checking for misleading Service objects")
 
     PROTOCOL_TYPES = ('tcp', 'udp')
     for i, device_group in enumerate(device_groups):
-        print(f"({i+1}/{len(device_groups)}) Checking {device_group}'s Service objects")
+        logger.info(f"({i+1}/{len(device_groups)}) Checking {device_group}'s Service objects")
         for service_entry in pan_config.get_devicegroup_object('Services', device_group):
             # For simplicity, convert the XML object to a dict:
             service_dict = xml_object_to_dict(service_entry)
@@ -50,7 +53,7 @@ def find_unconventional_services(profilepackage):
 
 
 @register_policy_validator("UnconventionallyNamedAddresses", "Address objects that don't match the configured naming convention")
-def find_unconventional_services(profilepackage):
+def find_unconventional_addresses(profilepackage):
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
 
@@ -65,12 +68,12 @@ def find_unconventional_services(profilepackage):
 
     badentries = []
 
-    print("*"*80)
-    print("Checking for misleading Address objects")
+    logger.info("*"*80)
+    logger.info("Checking for misleading Address objects")
 
     ADDRESS_TYPES = ('fqdn', 'ip-netmask', 'ip-range', 'ip-wildcard')
     for i, device_group in enumerate(device_groups):
-        print(f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address objects")
+        logger.info(f"({i+1}/{len(device_groups)}) Checking {device_group}'s Address objects")
         for address_entry in pan_config.get_devicegroup_object('Addresses', device_group):
             # For simplicity, convert the XML object to a dict:
             address_dict = xml_object_to_dict(address_entry)

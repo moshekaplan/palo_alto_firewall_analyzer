@@ -1,7 +1,9 @@
 import collections
+import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator, get_policy_validators, xml_object_to_dict
 
+logger = logging.getLogger(__name__)
 
 def find_objects_needing_consolidation(equivalent_objects):
     # Takes as input the results from EquivalentServices
@@ -63,6 +65,9 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
         # Then check all of the policies
         for policytype in pan_config.SUPPORTED_POLICY_TYPES:
             for policy_entry in pan_config.get_devicegroup_policy(policytype, child_dg):
+                # Skip disabled policies
+                if policy_entry.find('disabled') is not None and policy_entry.find('disabled').text == 'yes':
+                    continue
                 if policytype in ("NATPreRules", "NATPostRules"):
                     for service_element in policy_entry.findall('./service'):
                         if service_element.text in services_to_replace:
@@ -81,15 +86,15 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
     pan_config = profilepackage.pan_config
     devicegroup_objects = profilepackage.devicegroup_objects
 
-    print ("*"*80)
-    print (f"Checking for unused {object_friendly_type} objects to consolidate")
+    logger.info ("*"*80)
+    logger.info (f"Checking for unused {object_friendly_type} objects to consolidate")
 
     # Objects will only be consolidated at the same device group level, to avoid potential scope issues
     equivalent_objects = validator_function(profilepackage)
     dg_to_objects_to_consolidate = find_objects_needing_consolidation(equivalent_objects)
 
     if not dg_to_objects_to_consolidate:
-        print (f"There were no {object_friendly_type} to consolidate")
+        logger.info (f"There were no {object_friendly_type} to consolidate")
         return dg_to_objects_to_consolidate
 
     badentries = []

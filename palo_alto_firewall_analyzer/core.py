@@ -3,14 +3,17 @@ import configparser
 import dataclasses
 import functools
 import ipaddress
+import logging
 import os
 import socket
+import typing
 import xml.etree.ElementTree
 
-import typing
 import xmltodict
 
 from palo_alto_firewall_analyzer.pan_config import PanConfig
+
+logger = logging.getLogger(__name__)
 
 # A registry is used to auto-register the policy validators and fixers.
 policy_validator_registry = {}
@@ -59,6 +62,7 @@ class ConfigurationSettings:
         a config object with default settings"""
 
         if configfile:
+            logger.debug(f"Loading config file from {configfile}")
             # Validate config file exists
             if not os.path.isfile(configfile):
                 raise Exception(f"Config file '{configfile}' does not exist! Exiting")
@@ -94,7 +98,6 @@ class ConfigurationSettings:
             self.local_config.set('Analyzer', 'Equivalent objects ignore description = false')
             self.local_config.set('Analyzer', 'Equivalent objects ignore tags = false')
 
-
     def validate_mandatory_fields(self):
         panorama = self.local_config['Analyzer']['Panorama']
         if not panorama:
@@ -122,7 +125,6 @@ class ProfilePackage:
     devicegroup_objects: typing.Dict
     devicegroup_exclusive_objects: typing.Dict
     rule_limit_enabled: bool
-    verbose: bool
     no_api: bool
 
 

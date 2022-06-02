@@ -1,4 +1,8 @@
+import logging
+
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+
+logger = logging.getLogger(__name__)
 
 @register_policy_validator("DisabledPolicies", "Policy objects that are disabled")
 def find_disabled_policies(profilepackage):

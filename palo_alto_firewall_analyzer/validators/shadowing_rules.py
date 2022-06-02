@@ -26,9 +26,11 @@ A future enhancement would be to also check IP ranges and subnets, so that
 127.0.0.0/24 would also be detected as shadowing 127.0.0.1/32.
 '''
 
+import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
 
+logger = logging.getLogger(__name__)
 
 def get_contained_objects(group_name, all_groups_to_members):
     """Given a the name of an AddressGroup or ServiceGroup, retrieves a set of all the names of objects effectively contained within"""
@@ -187,11 +189,11 @@ def find_shadowing_rules(profilepackage):
 
     badentries = []
 
-    print("*" * 80)
-    print("Checking for shadowing rules")
+    logger.info("*" * 80)
+    logger.info("Checking for shadowing rules")
 
     for i, device_group in enumerate(device_groups):
-        print(f"Checking Device group {device_group}")
+        logger.info(f"Checking Device group {device_group}")
         # As security rules are inherited from parent device groups, we'll need to check those too
         all_rules = get_all_rules_for_dg(pan_config, device_group)
         # Filter disabled rules:
@@ -214,7 +216,7 @@ def find_shadowing_rules(profilepackage):
                 prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry = prior_tuple
                 shadowing_list += [f"{prior_dg}'s {prior_ruletype} '{prior_rule_name}'"]
             text += ", ".join(shadowing_list)
-            print(text)
+            logger.info(text)
             badentries.append(
                 BadEntry(data=(shadowed_tuple, prior_tuples), text=text, device_group=device_group, entry_type=None))
 
