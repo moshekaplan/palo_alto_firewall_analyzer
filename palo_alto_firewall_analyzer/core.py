@@ -76,6 +76,8 @@ class ConfigurationSettings:
             self.local_config.set('Analyzer', '# Mandatory: The hostname of the panorama to query')
             self.local_config.set('Analyzer', 'Panorama', 'my-panorama-hostname')
             self.local_config.set('Analyzer', '# Optional config values, used by validators')
+            self.local_config.set('Analyzer', '# DisabledPolicies: Ignore the following disabled rules: (comma delimited)')
+            self.local_config.set('Analyzer', '# Ignored Disabled Policies = Rule 1,Rule 2')
             self.local_config.set('Analyzer', '# Mandate a specific log profile')
             self.local_config.set('Analyzer', '# Mandated Logging Profile = default')
             self.local_config.set('Analyzer', '# Ignore certain DNS prefixes in find_badhostname, as they might not always be available (e.g., DHCP)')
