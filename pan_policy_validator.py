@@ -99,9 +99,7 @@ Retrieves PAN FW policy and checks it for various issues."""
 
     parser = argparse.ArgumentParser(description=description, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--all", help="Run validators on all Device Groups", action='store_true')
-    group.add_argument("--device-group", help="Device Group to run through validator")
+    parser.add_argument("--device-group", help="Device Group to run through validator (defaults to all)")
     parser.add_argument("--validator", help="Only run specified validators (repeat for multiple)",
                         choices=sorted(get_policy_validators().keys()), action='append')
     parser.add_argument("--quiet", help="Silence output", action='store_true')

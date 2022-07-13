@@ -19,45 +19,45 @@ The second time you launch the analyzer it will detect that "API_KEY.txt" is not
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
 * Run all non-API validators on all device groups:
-`pan_policy_validator.py --all --no-api`
+`pan_policy_validator.py --no-api`
 
 * Run all validators on all device groups (this may take a long time):
-`pan_policy_validator.py --all`
+`pan_policy_validator.py`
 
 * Run a single validator on a single device group:
 `pan_policy_validator.py --device-group my_device_group --validator UnusedServices`
 
 * Run a single validator on all device groups:
-`pan_policy_validator.py --all --validator UnusedServices`
+`pan_policy_validator.py --validator UnusedServices`
 
 * Run all non-API validators on an XML configuration file downloaded with "Export Panorama configuration version":
-`pan_policy_validator.py --all --xml 12345.xml`
+`pan_policy_validator.py --xml 12345.xml`
 
 If you're not sure where to start, I recommend downloading an XML file from:
-`Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_policy_validator.py --all --xml 12345.xml`
+`Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_policy_validator.py --xml 12345.xml`
 
 ## Common Workflows
 There are a few common workflows to clean the firewall configuration:
 
 ### Consolidate Service Objects
 Consolidate Service objects so there is only one object for each Service:
-* Delete unused Service objects: `python pan_policy_fixer --all --fixer DeleteUnusedServices`
-* Check if any Service objects have misleading names: `python pan_policy_validator --all --validator MisleadingServices`
-* Consolidate service objects in use: `python pan_policy_fixer --all --fixer ConsolidateServices`
-* Delete the now-unused Service objects: `python pan_policy_fixer --all --fixer DeleteUnusedServices`
-* Define a convention in the config file, then rename to fit the naming convention: `python pan_policy_fixer --all --fixer RenameUnconventionallyNamedServices`
+* Delete unused Service objects: `python pan_policy_fixer --fixer DeleteUnusedServices`
+* Check if any Service objects have misleading names: `python pan_policy_validator --validator MisleadingServices`
+* Consolidate service objects in use: `python pan_policy_fixer --fixer ConsolidateServices`
+* Delete the now-unused Service objects: `python pan_policy_fixer --fixer DeleteUnusedServices`
+* Define a convention in the config file, then rename to fit the naming convention: `python pan_policy_fixer --fixer RenameUnconventionallyNamedServices`
 
 ### Consolidate Address Objects
 Consolidate Address objects so there is only one object for each target:
-* Delete unused Address objects: `python pan_policy_fixer.py --all --fixer DeleteUnusedAddresses`
-* Delete Address objects with FQDNs that don't resolve: `python pan_policy_validator.py --all --validator BadHostname`
-* Check if any Address objects have IPs in FQDNs: `python pan_policy_validator.py --all --validator FQDNContainsIP`
-* Check if any Address objects have misleading names: `python pan_policy_validator.py --all --validator MisleadingAddresses`
-* Replace Address objects using IPs with FQDNs: `python pan_policy_validator.py --all --fixer FixIPWithResolvingFQDN`
-* Consolidate Address objects in use: `python pan_policy_fixer.py --all --fixer ConsolidateAddresses`
-* Delete the now-unused Address objects: `python pan_policy_fixer.py --all --fixer DeleteUnusedAddresses`
-* Make all FQDN objects use FQDNs: `python pan_policy_validator.py --all --fixer FixUnqualifiedFQDN`
-* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_policy_fixer --all --fixer RenameUnconventionallyNamedAddresses`
+* Delete unused Address objects: `python pan_policy_fixer.py --fixer DeleteUnusedAddresses`
+* Delete Address objects with FQDNs that don't resolve: `python pan_policy_validator.py --validator BadHostname`
+* Check if any Address objects have IPs in FQDNs: `python pan_policy_validator.py --validator FQDNContainsIP`
+* Check if any Address objects have misleading names: `python pan_policy_validator.py --validator MisleadingAddresses`
+* Replace Address objects using IPs with FQDNs: `python pan_policy_validator.py --fixer FixIPWithResolvingFQDN`
+* Consolidate Address objects in use: `python pan_policy_fixer.py --fixer ConsolidateAddresses`
+* Delete the now-unused Address objects: `python pan_policy_fixer.py --fixer DeleteUnusedAddresses`
+* Make all FQDN objects use FQDNs: `python pan_policy_validator.py --fixer FixUnqualifiedFQDN`
+* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_policy_fixer --fixer RenameUnconventionallyNamedAddresses`
 
 
 ## Known Issues

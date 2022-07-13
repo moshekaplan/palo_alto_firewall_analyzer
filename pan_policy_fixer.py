@@ -92,9 +92,7 @@ Fixes issues in PAN FW policies."""
 
     parser = argparse.ArgumentParser(description=description, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--all", help="Run fixer on all Device Groups", action='store_true')
-    group.add_argument("--device-group", help="Device Group to run through fixer")
+    parser.add_argument("--device-group", help="Device Group to run through fixer (defaults to all)")
     parser.add_argument("--fixer", help="Fixer to run",
                         choices=sorted(get_policy_fixers().keys()), required=True)
     parser.add_argument("--quiet", help="Silence output", action='store_true')
