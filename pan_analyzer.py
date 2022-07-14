@@ -28,7 +28,7 @@ def configure_logging(enable_debug_log, console_enabled):
     formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
 
     if enable_debug_log:
-        logfile_path = f'pan_validator_debug_{EXECUTION_START_TIME}.log'
+        logfile_path = f'pan_analyzer_debug_{EXECUTION_START_TIME}.log'
         fh = logging.FileHandler(logfile_path)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
@@ -172,14 +172,16 @@ def main():
     configure_logging(parsed_args.debug, not parsed_args.quiet)
     logger.debug(f"Script launched with the following arguments {' '.join(sys.argv)}")
     logger.debug(f"Execution began at {EXECUTION_START_TIME}")
+
+    output_fname = build_output_fname(parsed_args)
+    logger.debug(f"Writing output to {output_fname}")
+
     if parsed_args.xml:
         api_key = ''
         parsed_args.no_api = True
     else:
         api_key = load_api_key(parsed_args.api)
 
-    output_fname = build_output_fname(parsed_args)
-    logger.debug(f"Writing output to {output_fname}")
 
     no_api = parsed_args.no_api
 
