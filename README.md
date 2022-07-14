@@ -4,10 +4,7 @@
 
 Python3 scripts for reviewing and fixing Palo Alto Firewall configurations
 
-This repository contains the following user scripts:
-
-* `pan_policy_validator.py` - Detects Palo Alto Network firewall configuration issues
-* `pan_policy_fixer.py` - Fixes detected Palo Alto Network firewall configuration issues
+This repository contains the script `pan_analyzer.py`, which can detects and fix Palo Alto Network firewall configuration issues.
 
 The validators are designed to have as few false positives as possible. If there is a false positive, please [report an issue](https://github.com/moshekaplan/palo_alto_firewall_analyzer/issues/new)!
 
@@ -19,22 +16,22 @@ The second time you launch the analyzer it will detect that "API_KEY.txt" is not
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
 * Run all non-API validators on all device groups:
-`pan_policy_validator.py --no-api`
+`pan_analyzer.py --no-api`
 
 * Run all validators on all device groups (this may take a long time):
-`pan_policy_validator.py`
+`pan_analyzer.py`
 
 * Run a single validator on a single device group:
-`pan_policy_validator.py --device-group my_device_group --validator UnusedServices`
+`pan_analyzer.py --device-group my_device_group --validator UnusedServices`
 
 * Run a single validator on all device groups:
-`pan_policy_validator.py --validator UnusedServices`
+`pan_analyzer.py --validator UnusedServices`
 
 * Run all non-API validators on an XML configuration file downloaded with "Export Panorama configuration version":
-`pan_policy_validator.py --xml 12345.xml`
+`pan_analyzer.py --xml 12345.xml`
 
 If you're not sure where to start, I recommend downloading an XML file from:
-`Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_policy_validator.py --xml 12345.xml`
+`Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_analyzer.py --xml 12345.xml`
 
 ## Common Workflows
 There are a few common workflows to clean the firewall configuration:
@@ -50,13 +47,13 @@ Consolidate Service objects so there is only one object for each Service:
 ### Consolidate Address Objects
 Consolidate Address objects so there is only one object for each target:
 * Delete unused Address objects: `python pan_policy_fixer.py --fixer DeleteUnusedAddresses`
-* Delete Address objects with FQDNs that don't resolve: `python pan_policy_validator.py --validator BadHostname`
-* Check if any Address objects have IPs in FQDNs: `python pan_policy_validator.py --validator FQDNContainsIP`
-* Check if any Address objects have misleading names: `python pan_policy_validator.py --validator MisleadingAddresses`
-* Replace Address objects using IPs with FQDNs: `python pan_policy_validator.py --fixer FixIPWithResolvingFQDN`
+* Delete Address objects with FQDNs that don't resolve: `python pan_analyzer.py --validator BadHostname`
+* Check if any Address objects have IPs in FQDNs: `python pan_analyzer.py --validator FQDNContainsIP`
+* Check if any Address objects have misleading names: `python pan_analyzer.py --validator MisleadingAddresses`
+* Replace Address objects using IPs with FQDNs: `python pan_analyzer.py --fixer FixIPWithResolvingFQDN`
 * Consolidate Address objects in use: `python pan_policy_fixer.py --fixer ConsolidateAddresses`
 * Delete the now-unused Address objects: `python pan_policy_fixer.py --fixer DeleteUnusedAddresses`
-* Make all FQDN objects use FQDNs: `python pan_policy_validator.py --fixer FixUnqualifiedFQDN`
+* Make all FQDN objects use FQDNs: `python pan_analyzer.py --fixer FixUnqualifiedFQDN`
 * Define a convention in the config file, then rename objects to fit a naming convention: `python pan_policy_fixer --fixer RenameUnconventionallyNamedAddresses`
 
 
