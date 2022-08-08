@@ -136,24 +136,33 @@ BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', '
 @functools.lru_cache(maxsize=None)
 def cached_dns_lookup(domain):
     try:
-        return socket.gethostbyname(domain)
+        result = socket.gethostbyname(domain)
+        logger.debug(f"gethostbyname() Domain:{domain} resolved to:{result}")
+        return result
     except socket.gaierror:
+        logger.debug(f"gethostbyname() Domain:{domain} failed to resolve")
         return None
 
 
 @functools.lru_cache(maxsize=None)
 def cached_dns_ex_lookup(domain):
     try:
-        return socket.gethostbyname_ex(domain)
+        result = socket.gethostbyname_ex(domain)
+        logger.debug(f"gethostbyname_ex() - Domain:{domain} resolved to:{result}")
+        return result
     except socket.gaierror:
+        logger.debug(f"gethostbyname_ex() Domain:{domain} failed to resolve")
         return (None, [], [])
 
 
 @functools.lru_cache(maxsize=None)
 def cached_fqdn_lookup(domain):
     try:
-        return socket.getfqdn(domain)
+        result = socket.getfqdn(domain)
+        logger.debug(f"getfqdn() - Domain:{domain} resolved to:{result}")
+        return result
     except socket.gaierror:
+        logger.debug(f"getfqdn() Domain:{domain} failed to resolve")
         return None
 
 
