@@ -108,8 +108,8 @@ def get_firewall_zone(firewall, api_key, ip):
 
 def get_and_save_API_key(output):
     logger.info("Please enter your credentials into the prompts to obtain an API key")
-    panorama = getpass.getpass(prompt="Panorama Hostname: ")
-    username = getpass.getpass(prompt="Username: ")
+    panorama = input("Panorama Hostname: ")
+    username = input("Username: ")
     password = getpass.getpass(prompt="Password: ")
     api_key = pan_api.get_API_key(panorama, username, password)
     with open(output, 'w') as fh:
