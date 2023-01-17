@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 @register_policy_validator("BadLogSetting", "Rule uses an incorrect log profile")
 def find_bad_log_setting(profilepackage):
-    mandated_log_profile = profilepackage.settings['Mandated Logging Profile']
+    mandated_log_profile = profilepackage.settings.get('Mandated Logging Profile')
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
 
