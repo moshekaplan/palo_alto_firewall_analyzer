@@ -10,7 +10,7 @@ from palo_alto_firewall_analyzer.core import squash_all_devicegroups, ProfilePac
 logger = logging.getLogger(__name__)
 
 
-def load_config_package(configuration_settings, api_key, device_group, limit, no_api, xml_file=None):
+def load_config_package(configuration_settings, api_key, device_group, limit, xml_file=None):
     if xml_file:
         # The list of firewalls are not available from the API, so
         # these variables will remain empty
@@ -95,8 +95,7 @@ def load_config_package(configuration_settings, api_key, device_group, limit, no
         device_groups=device_groups,
         devicegroup_objects=devicegroup_objects,
         devicegroup_exclusive_objects=devicegroup_exclusive_objects,
-        rule_limit_enabled=rule_limit_enabled,
-        no_api=no_api
+        rule_limit_enabled=rule_limit_enabled
     )
     return profilepackage
 

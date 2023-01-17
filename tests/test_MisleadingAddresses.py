@@ -24,8 +24,7 @@ class TestMisleadingAddresses(unittest.TestCase):
             device_groups=device_groups,
             devicegroup_objects=devicegroup_objects,
             devicegroup_exclusive_objects=devicegroup_exclusive_objects,
-            rule_limit_enabled=False,
-            no_api=False
+            rule_limit_enabled=False
         )
         return profilepackage
 

@@ -18,18 +18,20 @@ class TestExtraZones(unittest.TestCase):
         devicegroup_exclusive_objects = {'test_dg': collections.defaultdict(list)}
         devicegroup_exclusive_objects["test_dg"]['SecurityPreRules'] = rules
 
+        settings = ConfigurationSettings().get_config()
+        settings['Enable validators with many API requests'] = "true"
+
         profilepackage = ProfilePackage(
             api_key='',
             pan_config=PanConfig('<_/>'),
-            settings=ConfigurationSettings().get_config(),
+            settings=settings,
             device_group_hierarchy_children={},
             device_group_hierarchy_parent={},
             device_groups_and_firewalls={},
             device_groups=device_groups,
             devicegroup_objects=devicegroup_objects,
             devicegroup_exclusive_objects=devicegroup_exclusive_objects,
-            rule_limit_enabled=False,
-            no_api=False
+            rule_limit_enabled=False
         )
         return profilepackage
 

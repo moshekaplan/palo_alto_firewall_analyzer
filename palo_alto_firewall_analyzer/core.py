@@ -75,16 +75,24 @@ class ConfigurationSettings:
             self.local_config.add_section('Analyzer')
             self.local_config.set('Analyzer', '# Mandatory: The hostname of the panorama to query')
             self.local_config.set('Analyzer', 'Panorama', 'my-panorama-hostname')
+
             self.local_config.set('Analyzer', '# Optional config values, used by validators')
+            self.local_config.set('Analyzer', '# ExtraRules, ExtraZones, MissingZones: Enable validators that require making many API requests')
+            self.local_config.set('Analyzer', '# Enable validators with many API requests = false')
+
             self.local_config.set('Analyzer', '# DisabledPolicies: Ignore the following disabled rules: (comma delimited)')
             self.local_config.set('Analyzer', '# Ignored Disabled Policies = Rule 1,Rule 2')
+
             self.local_config.set('Analyzer', '# Mandate a specific log profile')
             self.local_config.set('Analyzer', '# Mandated Logging Profile = default')
+
             self.local_config.set('Analyzer', '# Ignore certain DNS prefixes in find_badhostname, as they might not always be available (e.g., DHCP)')
             self.local_config.set('Analyzer', '# Ignored DNS Prefixes = PC-,iPhone')
+
             self.local_config.set('Analyzer', '# Specify which Security Profile Groups are allowed and the default profile')
             self.local_config.set('Analyzer', '# Allowed Group Profiles = Security Profile Group-default,Security Profile Group-1,Security Profile Group-2')
             self.local_config.set('Analyzer', '# Default Group Profile = Security Profile Group-default')
+
             self.local_config.set('Analyzer', '# UnconventionallyNamedAddresses: Specify a format for Address object names. Available fields are: {host}, {network}, {range}, {fqdn}, {mask}')
             self.local_config.set('Analyzer', '# host is for an IPv4 with a /32 netmask, IPv6 with a /128, or a host without a netmask at all')
             self.local_config.set('Analyzer', 'fqdn name format = fqdn-{fqdn}')
@@ -94,8 +102,10 @@ class ConfigurationSettings:
             self.local_config.set('Analyzer', '# Palo alto does not allow colon (:) characters in names')
             self.local_config.set('Analyzer', 'ipv6 colon replacement char = _')
             self.local_config.set('Analyzer', 'wildcard name format = wildcard-{mask}')
+
             self.local_config.set('Analyzer', '# UnconventionallyNamedServices: Specify a format for Service object names. Available fields are: {transport}, {source-port}, {port}, {override}')
             self.local_config.set('Analyzer', '# service name format = {transport}-{port}')
+
             self.local_config.set('Analyzer', '# EquivalentObjects: Whether to ignore the description field when comparing if two objects are equivalent (false by default)')
             self.local_config.set('Analyzer', 'Equivalent objects ignore description = false')
             self.local_config.set('Analyzer', 'Equivalent objects ignore tags = false')
@@ -127,8 +137,6 @@ class ProfilePackage:
     devicegroup_objects: typing.Dict
     devicegroup_exclusive_objects: typing.Dict
     rule_limit_enabled: bool
-    no_api: bool
-
 
 BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', 'entry_type'])
 
