@@ -22,8 +22,10 @@ def load_config_package(configuration_settings, api_key, device_group, limit, no
         active_firewalls_per_devicegroup = collections.defaultdict(list)
     else:
         # Load the XML configuration and list of firewalls via API requests
+        logger.debug(f"Downloading XML configuration via API")
         panorama = configuration_settings.get('panorama')
         xml_config = pan_api.export_configuration2(panorama, api_key)
+        logger.debug(f"Loading downloaded XML configuration")
         pan_config = PanConfig(xml_config)
         device_groups_and_firewalls = pan_api.get_device_groups_and_firewalls(panorama, api_key)
         active_firewalls = pan_api.get_active_firewalls(panorama, api_key)
