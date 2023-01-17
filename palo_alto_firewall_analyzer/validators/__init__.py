@@ -10,6 +10,7 @@ from . import group_replacements
 from . import ip_with_resolving_fqdn
 from . import misleading_objects
 from . import redundant_rule_members
+from . import rules_missing_security_profile
 from . import shadowing_addresses_and_groups
 from . import shadowing_rules
 from . import shadowing_services_and_groups
