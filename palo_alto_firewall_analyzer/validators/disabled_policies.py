@@ -7,14 +7,14 @@ logger = logging.getLogger(__name__)
 
 @register_policy_validator("DisabledPolicies", "Policy objects that are disabled")
 def find_disabled_policies(profilepackage):
-    devicegroup_objects = profilepackage.devicegroup_objects
+    device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
     ignored_disabled_rules = set(profilepackage.settings.get('Ignored Disabled Policies', "").split(','))
 
     policies_to_delete = []
-    for i, device_group in enumerate(devicegroup_objects):
+    for device_group in device_groups:
         for policy_type in pan_config.SUPPORTED_POLICY_TYPES:
-            policies = devicegroup_objects[device_group][policy_type]
+            policies = pan_config.get_devicegroup_policy(policy_type, device_group)
             for policy_entry in policies:
                 disabled = (policy_entry.find('disabled') is not None and policy_entry.find('disabled').text == 'yes')
                 if disabled:
