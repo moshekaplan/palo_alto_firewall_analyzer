@@ -43,7 +43,7 @@ Consolidate Service objects so there is only one object for each Service:
 
 ### Consolidate Address Objects
 Consolidate Address objects so there is only one object for each target:
-* Delete unused Address objects: `python pan_analyzer.py.py --fixer DeleteUnusedAddresses`
+* Delete unused Address objects: `python pan_analyzer.py --fixer DeleteUnusedAddresses`
 * Delete Address objects with FQDNs that don't resolve: `python pan_analyzer.py --validator BadHostname`
 * Check if any Address objects have IPs in FQDNs: `python pan_analyzer.py --validator FQDNContainsIP`
 * Check if any Address objects have misleading names: `python pan_analyzer.py --validator MisleadingAddresses`
