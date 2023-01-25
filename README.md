@@ -15,19 +15,16 @@ in `"~\.pan_policy_analyzer\` and instruct you to edit it.
 The second time you launch the analyzer it will detect that "API_KEY.txt" is not present,
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
-* Run all non-API validators on all device groups:
+* Run all validators on all device groups:
 `pan_analyzer.py`
-
-* Run all validators on all device groups (this may take a long time):
-`pan_analyzer.py`
-
-* Run a single validator on a single device group:
-`pan_analyzer.py --device-group my_device_group --validator UnusedServices`
 
 * Run a single validator on all device groups:
 `pan_analyzer.py --validator UnusedServices`
 
-* Run all non-API validators on an XML configuration file downloaded with "Export Panorama configuration version":
+* Run a single validator on a single device group:
+`pan_analyzer.py --device-group my_device_group --validator UnusedServices`
+
+* Run all validators on an XML configuration file downloaded with "Export Panorama configuration version":
 `pan_analyzer.py --xml 12345.xml`
 
 If you're not sure where to start, I recommend downloading an XML file from:
@@ -38,23 +35,23 @@ There are a few common workflows to clean the firewall configuration:
 
 ### Consolidate Service Objects
 Consolidate Service objects so there is only one object for each Service:
-* Delete unused Service objects: `python pan_policy_fixer --fixer DeleteUnusedServices`
-* Check if any Service objects have misleading names: `python pan_policy_validator --validator MisleadingServices`
-* Consolidate service objects in use: `python pan_policy_fixer --fixer ConsolidateServices`
-* Delete the now-unused Service objects: `python pan_policy_fixer --fixer DeleteUnusedServices`
-* Define a convention in the config file, then rename to fit the naming convention: `python pan_policy_fixer --fixer RenameUnconventionallyNamedServices`
+* Delete unused Service objects: `python pan_analyzer.py --fixer DeleteUnusedServices`
+* Check if any Service objects have misleading names: `python pan_analyzer.py --validator MisleadingServices`
+* Consolidate service objects in use: `python pan_analyzer.py --fixer ConsolidateServices`
+* Delete the now-unused Service objects: `python pan_analyzer.py --fixer DeleteUnusedServices`
+* Define a convention in the config file, then rename to fit the naming convention: `python pan_analyzer.py --fixer RenameUnconventionallyNamedServices`
 
 ### Consolidate Address Objects
 Consolidate Address objects so there is only one object for each target:
-* Delete unused Address objects: `python pan_policy_fixer.py --fixer DeleteUnusedAddresses`
+* Delete unused Address objects: `python pan_analyzer.py.py --fixer DeleteUnusedAddresses`
 * Delete Address objects with FQDNs that don't resolve: `python pan_analyzer.py --validator BadHostname`
 * Check if any Address objects have IPs in FQDNs: `python pan_analyzer.py --validator FQDNContainsIP`
 * Check if any Address objects have misleading names: `python pan_analyzer.py --validator MisleadingAddresses`
 * Replace Address objects using IPs with FQDNs: `python pan_analyzer.py --fixer FixIPWithResolvingFQDN`
-* Consolidate Address objects in use: `python pan_policy_fixer.py --fixer ConsolidateAddresses`
-* Delete the now-unused Address objects: `python pan_policy_fixer.py --fixer DeleteUnusedAddresses`
+* Consolidate Address objects in use: `python pan_analyzer.py --fixer ConsolidateAddresses`
+* Delete the now-unused Address objects: `python pan_analyzer.py --fixer DeleteUnusedAddresses`
 * Make all FQDN objects use FQDNs: `python pan_analyzer.py --fixer FixUnqualifiedFQDN`
-* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_policy_fixer --fixer RenameUnconventionallyNamedAddresses`
+* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_analyzer.py --fixer RenameUnconventionallyNamedAddresses`
 
 
 ## Known Issues
