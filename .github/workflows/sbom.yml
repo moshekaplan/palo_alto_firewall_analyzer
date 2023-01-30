@@ -27,5 +27,5 @@ jobs:
         python -m pip install cyclonedx-bom
     - name: SBOM with CycloneDX
       run: |
-        pip freeze > requirements_frozen .txt
-        python3 -m cyclonedx_py -r -i requirements_frozen .txt -o sbom.xml
+        pip freeze > requirements_frozen.txt
+        python3 -m cyclonedx_py -r -i requirements_frozen.txt -o sbom.xml
