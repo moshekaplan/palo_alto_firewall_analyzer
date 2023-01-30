@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build_sbom:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -29,3 +29,8 @@ jobs:
       run: |
         pip freeze > requirements_frozen.txt
         python3 -m cyclonedx_py -r -i requirements_frozen.txt -o sbom.xml
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: sbom.xml
+        path: sbom.xml
