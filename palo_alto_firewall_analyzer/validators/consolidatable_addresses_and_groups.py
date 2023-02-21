@@ -141,7 +141,8 @@ def replace_member_contents(address_like_entries, address_to_replacement, replac
                 replacements_made[member] = address_to_replacement[member]
                 new_addresses.append(address_to_replacement[member])
             else:
-                # Member needs to be replaced, but replacement is already present, so nothing to do:
+                # Member needs to be replaced, but replacement is already present, so member will not be added:
+                replacements_made[member] = "<NOTHING>"
                 continue
         # Note that it's possible for there to be no replacements made, because the replacing was
         # only needed in 'source', not 'destination', or vice-versa
