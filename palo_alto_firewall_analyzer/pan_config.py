@@ -181,6 +181,13 @@ class PanConfig:
         major_version = full_version.rsplit('.', 1)[0]
         return major_version
 
+    @functools.lru_cache(maxsize=None)
+    def get_managed_serials(self):
+        # Returns a list of serial numbers of managed devices
+        serial_elements = self.configroot.findall('./config/mgt-config/devices/entry')
+        serials = [serial_element.get('name') for serial_element in serial_elements]
+        return serials
+
 
 def main():
     fname = "config_pretty.xml"
