@@ -31,7 +31,7 @@ def main():
     parser = argparse.ArgumentParser(description="Disable a list of security rules")
     parser.add_argument("panorama", nargs=1, help="Panorama to run on")
     parser.add_argument("device-group", nargs=1, help="Device Group to disable rules from")
-    parser.add_argument("policy_type", nargs=1, help="Rule type", choices=['SecurityPreRules', 'SecurityPostRules'])
+    parser.add_argument("policy_type", nargs=1, help="Policy type", choices=['SecurityPreRules', 'SecurityPostRules'])
     parser.add_argument("infile", nargs=1, help="Input file with list of rules to disable")
     parser.add_argument("--api", help=f"File with API Key (default is {DEFAULT_API_KEYFILE})", default=DEFAULT_API_KEYFILE)
 
@@ -55,14 +55,14 @@ def main():
 
     version = pan_config.get_major_version()
 
-    for rule_entry in pan_config.get_devicegroup_policy(policy_type, device_group):
-        rule_name = rule_entry.get('name')
+    for policy_entry in pan_config.get_devicegroup_policy(policy_type, device_group):
+        rule_name = policy_entry.get('name')
         if rule_name in rules_to_disable:
-            disabled = (rule_entry.find('disabled') is not None and rule_entry.find('disabled').text == 'yes')
+            disabled = (policy_entry.find('disabled') is not None and policy_entry.find('disabled').text == 'yes')
             if disabled:
-                print(f"Rule {rule_entry} was already disabled, no action needed!")
+                print(f"Policy {rule_name} was already disabled, no action needed!")
             else:
-                policy_dict = xml_object_to_dict(rule_entry)['entry']
+                policy_dict = xml_object_to_dict(policy_entry)['entry']
                 policy_dict['disabled'] = 'yes'
                 print(f"Disabling {device_group}'s {policy_type} {rule_name}")
                 pan_api.update_devicegroup_policy(panorama, version, api_key, policy_dict, policy_type, device_group)
