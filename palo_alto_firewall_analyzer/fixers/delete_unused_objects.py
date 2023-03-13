@@ -68,7 +68,7 @@ def delete_unused_servicegroups(profilepackage):
     return delete_unused_object(profilepackage, object_type, object_friendly_type, validator_function)
 
 
-@register_policy_fixer("DeleteUnusedOjects", "Convenience wrapper that calls DeleteUnusedAddressGroups, DeleteUnusedAddresses, DeleteUnusedServiceGroups, and DeleteUnusedServices")
+@register_policy_fixer("DeleteUnusedObjects", "Convenience wrapper that calls DeleteUnusedAddressGroups, DeleteUnusedAddresses, DeleteUnusedServiceGroups, and DeleteUnusedServices")
 def delete_unused_objects(profilepackage):
     deleted_objects = []
     deleted_objects += delete_unused_addressgroups(profilepackage)
