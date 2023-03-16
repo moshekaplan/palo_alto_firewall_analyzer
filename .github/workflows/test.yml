@@ -39,4 +39,4 @@ jobs:
       run: |
         python -m pip install -e .
         coverage run -m pytest .
-        coverage report --include "palo_alto_firewall_analyzer/*"
+        coverage report --include "src/*"
