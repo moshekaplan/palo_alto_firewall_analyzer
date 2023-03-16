@@ -36,23 +36,23 @@ There are a few common workflows to clean the firewall configuration:
 
 ### Consolidate Service Objects
 Consolidate Service objects so there is only one object for each Service:
-* Delete unused Service objects: `python pan_analyzer.py --fixer DeleteUnusedServices`
-* Check if any Service objects have misleading names: `python pan_analyzer.py --validator MisleadingServices`
-* Consolidate service objects in use: `python pan_analyzer.py --fixer ConsolidateServices`
-* Delete the now-unused Service objects: `python pan_analyzer.py --fixer DeleteUnusedServices`
-* Define a convention in the config file, then rename to fit the naming convention: `python pan_analyzer.py --fixer RenameUnconventionallyNamedServices`
+* Delete unused Service objects: `python pan_analyzer --fixer DeleteUnusedServices`
+* Check if any Service objects have misleading names: `python pan_analyzer --validator MisleadingServices`
+* Consolidate service objects in use: `python pan_analyzer --fixer ConsolidateServices`
+* Delete the now-unused Service objects: `python pan_analyzer --fixer DeleteUnusedServices`
+* Define a convention in the config file, then rename to fit the naming convention: `python pan_analyzer --fixer RenameUnconventionallyNamedServices`
 
 ### Consolidate Address Objects
 Consolidate Address objects so there is only one object for each target:
-* Delete unused Address objects: `python pan_analyzer.py --fixer DeleteUnusedAddresses`
-* Delete Address objects with FQDNs that don't resolve: `python pan_analyzer.py --validator BadHostname`
-* Check if any Address objects have IPs in FQDNs: `python pan_analyzer.py --validator FQDNContainsIP`
-* Check if any Address objects have misleading names: `python pan_analyzer.py --validator MisleadingAddresses`
-* Replace Address objects using IPs with FQDNs: `python pan_analyzer.py --fixer FixIPWithResolvingFQDN`
-* Consolidate Address objects in use: `python pan_analyzer.py --fixer ConsolidateAddresses`
-* Delete the now-unused Address objects: `python pan_analyzer.py --fixer DeleteUnusedAddresses`
-* Make all FQDN objects use FQDNs: `python pan_analyzer.py --fixer FixUnqualifiedFQDN`
-* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_analyzer.py --fixer RenameUnconventionallyNamedAddresses`
+* Delete unused Address objects: `python pan_analyzer --fixer DeleteUnusedAddresses`
+* Delete Address objects with FQDNs that don't resolve: `python pan_analyzer --validator BadHostname`
+* Check if any Address objects have IPs in FQDNs: `python pan_analyzer --validator FQDNContainsIP`
+* Check if any Address objects have misleading names: `python pan_analyzer --validator MisleadingAddresses`
+* Replace Address objects using IPs with FQDNs: `python pan_analyzer --fixer FixIPWithResolvingFQDN`
+* Consolidate Address objects in use: `python pan_analyzer --fixer ConsolidateAddresses`
+* Delete the now-unused Address objects: `python pan_analyzer --fixer DeleteUnusedAddresses`
+* Make all FQDN objects use FQDNs: `python pan_analyzer --fixer FixUnqualifiedFQDN`
+* Define a convention in the config file, then rename objects to fit a naming convention: `python pan_analyzer --fixer RenameUnconventionallyNamedAddresses`
 
 
 ## Known Issues
