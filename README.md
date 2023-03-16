@@ -8,10 +8,15 @@ This repository contains the script `pan_analyzer`, which can detects and fix Pa
 
 The validators are designed to have as few false positives as possible. If there is a false positive, please [report an issue](https://github.com/moshekaplan/palo_alto_firewall_analyzer/issues/new)!
 
-## Quickstart
-Install the module with `pip install pan_analyzer`
+## pan_analyzer Quickstart
 
-The first time you launch the analyzer, it will create a `PAN_CONFIG.cfg` file
+1. Install the package with `pip install pan_analyzer`
+2. Run all validators on an XML configuration file downloaded with Panorama -> Setup -> Operations -> "Export Panorama configuration version":
+`pan_analyzer --xml 12345.xml`
+
+## Using pan_analyzer
+
+The first time you launch pan_analyzer, it will create a `PAN_CONFIG.cfg` file
 in `"~\.pan_policy_analyzer\` and instruct you to edit it.
 The second time you launch the analyzer it will detect that "API_KEY.txt" is not present,
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
@@ -27,6 +32,7 @@ and will prompt you for credentials and save the retrieved API key to "API_KEY.t
 
 * Run all validators on an XML configuration file downloaded with "Export Panorama configuration version":
 `pan_analyzer --xml 12345.xml`
+
 
 If you're not sure where to start, I recommend downloading an XML file from:
 `Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_analyzer.py --xml 12345.xml`
@@ -63,6 +69,13 @@ requests and can take a very long time. Given that PA recommends limiting the nu
 concurrent API calls to five, and that's shared among the web UI, these calls are not
 parallelized. Because of these concerns, the default configuration skips those validators.
 
+## Other scripts
+In addition to **pan_analyzer**, several other scripts are included in this package:
+* **pan_categorization_lookup** - Looks up categorization for either a single URL or a file with a list of URLs
+* **pan_disable_rules** - Takes a textfile with a list of security rules and disables them (useful for disabling rules found with PolicyOptimizer)
+* **pan_dump_active_sessions** - Dumps all active sessions from all firewalls
+* **pan_run_command** - Runs a single command on a single firewall
+* **pan_zone_lookup** - Looks up Zone for a single IP on all firewalls
 
 ## License ##
 
