@@ -4,7 +4,7 @@
 
 Python3 scripts for reviewing and fixing Palo Alto Firewall configurations
 
-This repository contains the script `pan_analyzer`, which can detects and fix Palo Alto Network firewall configuration issues.
+This repository contains the script `pan_analyzer`, which can detects and fix Palo Alto Network firewall configuration issues, as well as several other helper scripts.
 
 The validators are designed to have as few false positives as possible. If there is a false positive, please [report an issue](https://github.com/moshekaplan/palo_alto_firewall_analyzer/issues/new)!
 
