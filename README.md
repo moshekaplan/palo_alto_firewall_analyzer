@@ -4,11 +4,12 @@
 
 Python3 scripts for reviewing and fixing Palo Alto Firewall configurations
 
-This repository contains the script `pan_analyzer.py`, which can detects and fix Palo Alto Network firewall configuration issues.
+This repository contains the script `pan_analyzer`, which can detects and fix Palo Alto Network firewall configuration issues.
 
 The validators are designed to have as few false positives as possible. If there is a false positive, please [report an issue](https://github.com/moshekaplan/palo_alto_firewall_analyzer/issues/new)!
 
 ## Quickstart
+Install the module with `pip install pan_analyzer`
 
 The first time you launch the analyzer, it will create a `PAN_CONFIG.cfg` file
 in `"~\.pan_policy_analyzer\` and instruct you to edit it.
@@ -16,16 +17,16 @@ The second time you launch the analyzer it will detect that "API_KEY.txt" is not
 and will prompt you for credentials and save the retrieved API key to "API_KEY.txt"
 
 * Run all validators on all device groups:
-`pan_analyzer.py`
+`pan_analyzer`
 
 * Run a single validator on all device groups:
-`pan_analyzer.py --validator UnusedServices`
+`pan_analyzer --validator UnusedServices`
 
 * Run a single validator on a single device group:
-`pan_analyzer.py --device-group my_device_group --validator UnusedServices`
+`pan_analyzer --device-group my_device_group --validator UnusedServices`
 
 * Run all validators on an XML configuration file downloaded with "Export Panorama configuration version":
-`pan_analyzer.py --xml 12345.xml`
+`pan_analyzer --xml 12345.xml`
 
 If you're not sure where to start, I recommend downloading an XML file from:
 `Panorama -> Setup -> Operations -> Export Panorama configuration version` and running: `pan_analyzer.py --xml 12345.xml`

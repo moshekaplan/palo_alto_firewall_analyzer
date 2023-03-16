@@ -1,0 +1,46 @@
+[project]
+name = "pan_analyzer"
+version = "0.0.1"
+authors = [
+  { name="Moshe Kaplan", email="me@moshekaplan.com" },
+]
+description = "Detect and remediate configuration issues in Palo Alto Networks firewalls"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "Topic :: System :: Networking :: Firewalls",
+]
+
+dependencies = [
+  "requests",
+  "xmltodict",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+]
+
+[project.scripts]
+pan_analyzer = "palo_alto_firewall_analyzer.scripts.pan_analyzer:main"
+pan_categorization_lookup = "palo_alto_firewall_analyzer.scripts.pan_categorization_lookup:main"
+pan_disable_rules = "palo_alto_firewall_analyzer.scripts.pan_disable_rules:main"
+pan_dump_active_sessions = "palo_alto_firewall_analyzer.scripts.pan_dump_active_sessions:main"
+pan_run_command = "palo_alto_firewall_analyzer.scripts.pan_run_command:main"
+pan_zone_lookup = "palo_alto_firewall_analyzer.scripts.pan_zone_lookup:main"
+
+
+
+[project.urls]
+"Homepage" = "https://github.com/moshekaplan/palo_alto_firewall_analyzer"
+"Bug Tracker" = "https://github.com/moshekaplan/palo_alto_firewall_analyzer/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
