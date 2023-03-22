@@ -2,6 +2,8 @@ import collections
 import functools
 import getpass
 import logging
+import os
+import os.path
 
 from palo_alto_firewall_analyzer import pan_api
 from palo_alto_firewall_analyzer.pan_config import PanConfig
@@ -107,13 +109,24 @@ def get_firewall_zone(firewall, api_key, ip):
     return zone
 
 
-def get_and_save_API_key(output):
+def load_API_key(fpath):
+    try:
+        with open(fpath) as fh:
+            api_key = fh.read().strip()
+    except OSError:
+        print(f"Unable to open file with API key '{fpath}'")
+        api_key = get_and_save_API_key(fpath)
+    return api_key
+
+def get_and_save_API_key(fpath):
     logger.info("Please enter your credentials into the prompts to obtain an API key")
     panorama = input("Panorama Hostname: ")
     username = input("Username: ")
     password = getpass.getpass(prompt="Password: ")
     api_key = pan_api.get_API_key(panorama, username, password)
-    with open(output, 'w') as fh:
+    # Create the output directory if it doesn't exist:
+    os.makedirs(os.path.dirname(fpath), exist_ok=True)
+    with open(fpath, 'w') as fh:
         fh.write(api_key)
-    logger.info(f"Successfully obtained an API key and stored it to {output}")
+    logger.info(f"Successfully obtained an API key and stored it to {fpath}")
     return api_key

@@ -11,14 +11,15 @@ import palo_alto_firewall_analyzer.validators
 import palo_alto_firewall_analyzer.fixers
 
 from palo_alto_firewall_analyzer.core import get_policy_validators, get_policy_fixers, ConfigurationSettings
-from palo_alto_firewall_analyzer.pan_helpers import load_config_package, get_and_save_API_key
+from palo_alto_firewall_analyzer.pan_helpers import load_config_package, load_API_key
 
 DEFAULT_CONFIG_DIR = os.path.expanduser("~\\.pan_policy_analyzer\\")
-DEFAULT_CONFIGFILE  = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
+DEFAULT_CONFIGFILE = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
 DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
 EXECUTION_START_TIME = datetime.datetime.today().strftime('%Y%m%d_%H%M%S')
 
 logger = logging.getLogger('palo_alto_firewall_analyzer')
+
 
 ###############################################################################
 # General helper functions
@@ -92,16 +93,6 @@ def write_analyzer_output(problems, fname, out_format):
                 fh.write('\n')
 
 
-def load_api_key(api_file):
-    try:
-        with open(api_file) as fh:
-            api_key = fh.read().strip()
-    except OSError:
-        logger.error(f"Unable to open file with API key '{api_file}'")
-        api_key = get_and_save_API_key(api_file)
-    return api_key
-
-
 def build_output_fname(parsed_args):
     # Build the name of the output file
     if parsed_args.xml:
@@ -150,7 +141,7 @@ def main():
     group.add_argument("--validator", help="Only run specified validators (repeat for multiple)",
                         choices=sorted(get_policy_validators().keys()), action='append')
     group.add_argument("--fixer", help="Fixer to run", choices=sorted(get_policy_fixers().keys()))
-                        
+
     parser.add_argument("--device-group", help="Device Group to run through validator (defaults to all)")
     parser.add_argument("--quiet", help="Silence output", action='store_true')
     parser.add_argument("--config", help=f"Config file to read (default is {DEFAULT_CONFIGFILE})", default=DEFAULT_CONFIGFILE)
@@ -173,7 +164,7 @@ def main():
     if parsed_args.xml:
         api_key = ''
     else:
-        api_key = load_api_key(parsed_args.api)
+        api_key = load_API_key(parsed_args.api)
 
     if not os.path.isfile(parsed_args.config):
         if parsed_args.config == DEFAULT_CONFIGFILE:
@@ -200,7 +191,7 @@ def main():
         else:
             validators = get_policy_validators()
         problems, total_problems = run_policy_validators(validators, profilepackage, output_fname)
-    
+
     write_analyzer_output(problems, output_fname, 'text')
     end_time = time.time()
 

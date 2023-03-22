@@ -4,21 +4,11 @@ import argparse
 import os
 
 from palo_alto_firewall_analyzer import pan_api
-from palo_alto_firewall_analyzer.pan_helpers import get_and_save_API_key
+from palo_alto_firewall_analyzer.pan_helpers import load_API_key
 from palo_alto_firewall_analyzer.pan_helpers import get_firewall_zone
 
 DEFAULT_CONFIG_DIR = os.path.expanduser("~\\.pan_policy_analyzer\\")
 DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
-
-
-def load_api_key(api_file):
-    try:
-        with open(api_file) as fh:
-            api_key = fh.read().strip()
-    except OSError:
-        print(f"Unable to open file with API key '{api_file}'")
-        api_key = get_and_save_API_key(api_file)
-    return api_key
 
 
 def main():
@@ -28,12 +18,7 @@ def main():
     parser.add_argument("--api", help=f"File with API Key (default is {DEFAULT_API_KEYFILE})", default=DEFAULT_API_KEYFILE)
 
     parsed_args = parser.parse_args()
-    try:
-        with open(parsed_args.api) as fh:
-            API_KEY = fh.read().strip()
-    except OSError:
-        print(f"Unable to open file with API key '{parsed_args.api}'")
-        API_KEY = get_and_save_API_key(parsed_args.api)
+    API_KEY = load_API_key(parsed_args.api)
 
     panorama = parsed_args.panorama[0]
     firewalls = pan_api.get_active_firewalls(panorama, API_KEY)
