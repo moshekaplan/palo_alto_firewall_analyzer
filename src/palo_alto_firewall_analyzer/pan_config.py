@@ -79,13 +79,13 @@ class PanConfig:
         "PolicyBasedForwardingPostRules": "post-rulebase/pbf/rules/",
         "DecryptionPreRules": "pre-rulebase/decryption/rules/",
         "DecryptionPostRules": "post-rulebase/decryption/rules/",
-        "TunnelInspectionPreRules": "pre-rulebase/tunnel-inspect/rules",
+        "TunnelInspectionPreRules": "pre-rulebase/tunnel-inspect/rules/",
         "TunnelInspectionPostRules": "post-rulebase/tunnel-inspect/rules/",
-        "ApplicationOverridePreRules": "pre-rulebase/application-override/rules",
+        "ApplicationOverridePreRules": "pre-rulebase/application-override/rules/",
         "ApplicationOverridePostRules": "post-rulebase/application-override/rules/",
-        "AuthenticationPreRules": "pre-rulebase/application-override/rules",
+        "AuthenticationPreRules": "pre-rulebase/application-override/rules/",
         "AuthenticationPostRules": "post-rulebase/application-override/rules/",
-        "DoSPreRules": "pre-rulebase/dos/rules",
+        "DoSPreRules": "pre-rulebase/dos/rules/",
         "DoSPostRules": "post-rulebase/dos/rules/",
         # "SDWANPreRules":
         # "SDWANPostRules"
