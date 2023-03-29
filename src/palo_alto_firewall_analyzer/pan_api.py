@@ -377,7 +377,7 @@ def update_devicegroup_policy(panorama, version, api_key, policy, policytype, de
 
 def update_devicegroup_object(panorama, version, api_key, object_entry, objecttype, device_group):
     if objecttype not in SUPPORTED_OBJECT_TYPES:
-        raise Exception(f"Invalid policytype '{objecttype}'! objecttype must be one of {SUPPORTED_OBJECT_TYPES}")
+        raise Exception(f"Invalid objecttype '{objecttype}'! objecttype must be one of {SUPPORTED_OBJECT_TYPES}")
 
     # 'shared' is a reserved name by PA and not allowed to be used as a device group name
     if device_group == 'shared':
