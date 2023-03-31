@@ -29,6 +29,7 @@ test = [
 [project.scripts]
 pan_analyzer = "palo_alto_firewall_analyzer.scripts.pan_analyzer:main"
 pan_categorization_lookup = "palo_alto_firewall_analyzer.scripts.pan_categorization_lookup:main"
+pan_delete_addresses = "palo_alto_firewall_analyzer.scripts.pan_delete_addresses:main"
 pan_disable_rules = "palo_alto_firewall_analyzer.scripts.pan_disable_rules:main"
 pan_dump_active_sessions = "palo_alto_firewall_analyzer.scripts.pan_dump_active_sessions:main"
 pan_run_command = "palo_alto_firewall_analyzer.scripts.pan_run_command:main"
