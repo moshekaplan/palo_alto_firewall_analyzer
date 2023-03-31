@@ -13,7 +13,7 @@ import palo_alto_firewall_analyzer.fixers
 from palo_alto_firewall_analyzer.core import get_policy_validators, get_policy_fixers, ConfigurationSettings
 from palo_alto_firewall_analyzer.pan_helpers import load_config_package, load_API_key
 
-DEFAULT_CONFIG_DIR = os.path.expanduser("~\\.pan_policy_analyzer\\")
+DEFAULT_CONFIG_DIR = os.path.expanduser("~" + os.sep + ".pan_policy_analyzer" + os.sep)
 DEFAULT_CONFIGFILE = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
 DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
 EXECUTION_START_TIME = datetime.datetime.today().strftime('%Y%m%d_%H%M%S')
