@@ -23,7 +23,7 @@ from palo_alto_firewall_analyzer.pan_helpers import load_config_package
 from palo_alto_firewall_analyzer.pan_helpers import load_API_key
 
 
-DEFAULT_CONFIG_DIR = os.path.expanduser("~\\.pan_policy_analyzer\\")
+DEFAULT_CONFIG_DIR = os.path.expanduser("~" + os.sep + ".pan_policy_analyzer" + os.sep)
 DEFAULT_CONFIGFILE = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
 DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
 
