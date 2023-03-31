@@ -110,12 +110,13 @@ def get_firewall_zone(firewall, api_key, ip):
 
 
 def load_API_key(fpath):
+    expanded_path = os.path.expanduser(fpath)
     try:
-        with open(fpath) as fh:
+        with open(expanded_path) as fh:
             api_key = fh.read().strip()
     except OSError:
-        print(f"Unable to open file with API key '{fpath}'")
-        api_key = get_and_save_API_key(fpath)
+        print(f"Unable to open file with API key '{expanded_path}'")
+        api_key = get_and_save_API_key(expanded_path)
     return api_key
 
 def get_and_save_API_key(fpath):
