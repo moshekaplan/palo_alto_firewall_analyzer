@@ -57,7 +57,7 @@ class ConfigurationSettings:
     of the validator and fixer scripts
     """
 
-    def __init__(self, configfile=None):
+    def __init__(self, configfile=None, panorama=None):
         """Load data from a file, otherwise create
         a config object with default settings"""
 
@@ -74,7 +74,9 @@ class ConfigurationSettings:
             self.local_config = configparser.ConfigParser(allow_no_value=True)
             self.local_config.add_section('Analyzer')
             self.local_config.set('Analyzer', '# Mandatory: The hostname of the panorama to query')
-            self.local_config.set('Analyzer', 'Panorama', 'my-panorama-hostname')
+            if panorama is None:
+                panorama = 'my-panorama-hostname'
+            self.local_config.set('Analyzer', 'Panorama', panorama)
 
             self.local_config.set('Analyzer', '# Optional config values, used by validators')
             self.local_config.set('Analyzer', '# ExtraRules, ExtraZones, MissingZones: Enable validators that require making many API requests')
@@ -137,6 +139,7 @@ class ProfilePackage:
     devicegroup_objects: typing.Dict
     devicegroup_exclusive_objects: typing.Dict
     rule_limit_enabled: bool
+
 
 BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', 'entry_type'])
 
