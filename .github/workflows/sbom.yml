@@ -29,6 +29,7 @@ jobs:
     - name: SBOM with CycloneDX
       run: |
         pip freeze > requirements_frozen.txt
+        python -m pipx ensurepath
         cyclonedx_py -r -i requirements_frozen.txt -o sbom.xml
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v2
