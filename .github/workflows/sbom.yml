@@ -30,7 +30,7 @@ jobs:
       run: |
         pip freeze > requirements_frozen.txt
         python -m pipx ensurepath
-        cyclonedx_py -r -i requirements_frozen.txt -o sbom.xml
+        cyclonedx-py -r -i requirements_frozen.txt -o sbom.xml
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v2
       with:
