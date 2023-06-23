@@ -38,7 +38,9 @@ def find_misleading_addresses(profilepackage):
             # The exact strategy will depend on the content type
             # For FQDNs, the domain should be present in the name
             if entry_type == 'fqdn':
-                if entry_value.lower().split('.', 1)[0] not in entry_name.lower():
+                # FQDNs can be up to 255 characters, but names are limited to 63 characters
+                # As such, skip FQDNs that are 63 or more characters, to avoid false positives
+                if len(entry_value) < 63 and entry_value.lower().split('.', 1)[0] not in entry_name.lower():
                     text = f"Device Group {device_group}'s Address {entry_name} has a misleading value of {entry_value}, because the FQDN's domain is not present in the name"
                     badentries.append(BadEntry(data=address_entry, text=text, device_group=device_group, entry_type='Addresses'))
             # For IPs, the IP should be present in the name, if the name 'looks' like it contains an IP (based on regex):
