@@ -194,8 +194,8 @@ def get_active_firewalls(panorama, api_key):
     root = xml.etree.ElementTree.fromstring(response.text)
     for device_elem in root.findall('./result/devices/entry'):
         hostname = device_elem.find('hostname').text
-        state = device_elem.find('ha/state').text
-        if state == 'active':
+        state_elem = device_elem.find('ha/state')
+        if state_elem is None or state_elem.text == 'active':
             active_devices.append(hostname)
     return sorted(active_devices)
 
