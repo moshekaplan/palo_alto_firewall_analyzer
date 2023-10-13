@@ -165,6 +165,7 @@ def replace_policy_contents(policies_needing_replacement, address_to_replacement
             for translation in ('source-translation', 'destination-translation'):
                 if translation not in object_policy_dict:
                     continue
+                logger.debug(f"NAT object_policy_dict: {object_policy_dict}")
                 if object_policy_dict[translation].get('translated-address'):
                     object_policy_dict[translation]['translated-address'], replacements_made = replace_member_contents(object_policy_dict[translation]['translated-address'], address_to_replacement, replacements_made)
                 if object_policy_dict[translation].get('dynamic-ip-and-port', {}).get('translated-address', {}).get('member'):
