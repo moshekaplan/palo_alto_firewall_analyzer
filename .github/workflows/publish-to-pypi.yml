@@ -7,7 +7,6 @@ on:
 jobs:
   build-n-publish:
     name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
-    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
