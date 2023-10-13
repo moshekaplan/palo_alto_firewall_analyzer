@@ -133,6 +133,7 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
         # Then replace the contents of policies
         for policy_dg, policy_type, policy_entry in policies_needing_replacement:
             object_policy_dict = xml_object_to_dict(policy_entry)['entry']
+            logger.debug(f"NAT object_policy_dict: {object_policy_dict}")
             replacements_made = {}
             if policy_type in ("NATPreRules", "NATPostRules"):
                 # NAT rules are limited to a single service

@@ -33,6 +33,7 @@ def find_misleading_addresses(profilepackage):
                 # Wildcards are unsupported, and so skipped
                 continue
 
+            logger.debug(f"address_dict['entry']: {address_dict['entry']}")
             entry_value = address_dict['entry'][entry_type]
 
             # The exact strategy will depend on the content type
@@ -84,6 +85,9 @@ def find_misleading_services(profilepackage):
             else:
                 # This should not be possible!
                 continue
+
+            logger.debug(f"service_dict['entry']: {service_dict['entry']}")
+
             entry_port = service_dict['entry']['protocol'][entry_protocol]['port']
             contains_protocol = 'tcp' in entry_name.lower() or 'udp' in entry_name.lower()
             contains_port = re.search(r'\d{3,}', entry_name) is not None
