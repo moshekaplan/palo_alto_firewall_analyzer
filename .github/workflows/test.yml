@@ -47,6 +47,7 @@ jobs:
     name: Coverage
     needs: tests
     runs-on: ubuntu-latest
+    if: github.repository == 'moshekaplan/palo_alto_firewall_analyzer' && github.event_name == 'push' && github.event.ref == 'refs/heads/main'
     steps:
       - name: "Check out the repo"
         uses: "actions/checkout@v4"
@@ -68,6 +69,7 @@ jobs:
         with:
           # GIST_TOKEN is a GitHub personal access token with scope "gist".
           auth: ${{ secrets.PALO_ALTO_FIREWALL_ANALYZER_CODECOVERAGE_TOKEN }}
+          # Updates Gist at https://gist.github.com/moshekaplan/1165ad4d7c2e8827ec6573b8bee2b7d9/
           gistID: 1165ad4d7c2e8827ec6573b8bee2b7d9
           filename: PALO_ALTO_FIREWALL_ANALYZER_CODECOVERAGE_covbadge.json
           label: Coverage
