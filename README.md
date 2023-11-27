@@ -1,6 +1,6 @@
 # Palo Alto Firewall Analyzer
 
-![Build](https://github.com/moshekaplan/palo_alto_firewall_analyzer/actions/workflows/test.yml/badge.svg)
+![Build](https://github.com/moshekaplan/palo_alto_firewall_analyzer/actions/workflows/test.yml/badge.svg)![Test coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/moshekaplan/1165ad4d7c2e8827ec6573b8bee2b7d9/raw/fde8d53ea40cfed2cdd758f022503b02a62cf55a/covbadge.json)
 
 Python3 scripts for reviewing and fixing Palo Alto Firewall configurations
 
