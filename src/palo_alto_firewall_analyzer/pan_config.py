@@ -29,6 +29,7 @@ class PanConfig:
             fake_result.append(conf)
             # fake_response.append(fake_result)
             self.configroot = fake_result
+            self.config_xml = {"version": conf.get("version"),"urldb": conf.get("urldb"),"detail-version":conf.get("detail-version")}                        
         else:
             self.configroot = xml.etree.ElementTree.fromstring(configdata).find('./result')
 
