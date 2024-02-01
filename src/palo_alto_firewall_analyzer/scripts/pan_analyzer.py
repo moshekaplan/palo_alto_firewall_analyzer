@@ -5,6 +5,7 @@ import logging
 import os.path
 import sys
 import time
+import json
 
 # Used to trigger loading the validators and fixers
 import palo_alto_firewall_analyzer.validators
@@ -17,7 +18,7 @@ DEFAULT_CONFIG_DIR = os.path.expanduser("~" + os.sep + ".pan_policy_analyzer" + 
 DEFAULT_CONFIGFILE = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
 DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
 EXECUTION_START_TIME = datetime.datetime.today().strftime('%Y%m%d_%H%M%S')
-
+RUNTIME_START = time.time()
 logger = logging.getLogger('palo_alto_firewall_analyzer')
 
 
@@ -70,8 +71,11 @@ def run_policy_validators(validators, profilepackage, output_fname):
     return problems, total_problems
 
 
-def write_analyzer_output(problems, fname, out_format):
-    supported_output_formats = ["text"]
+def write_analyzer_output(problems, fname, profilepackage, out_format = 'text'):
+    supported_output_formats = ["text", "json"]
+    if out_format is None:
+        out_format = 'text'
+        
     if out_format not in supported_output_formats:
         raise Exception(
             f"Unsupported output format of {out_format}! Output format must be one of {supported_output_formats}")
@@ -91,7 +95,36 @@ def write_analyzer_output(problems, fname, out_format):
                     # else:
                     #    fh.write('(none)\n')
                 fh.write('\n')
-
+    elif out_format == 'json':
+        #build json
+        total_problems = 0
+        entries = []     
+        for validator_info, problem_entries in problems.items():
+            validator_name, validator_description = validator_info            
+            
+            problems = []
+            for problem_entry in problem_entries:                
+                problem = {"desc":problem_entry.text}                
+                problems.append(problem)
+                total_problems+=1
+                
+            entry = {"validator_name":validator_name, "problems":problems}            
+            
+            entries.append(entry)
+        
+        end_time = time.time()
+        
+        data = {"config_version":profilepackage.pan_config.config_xml['version'],
+                "detail-version":profilepackage.pan_config.config_xml['detail-version'],
+                "urldb":profilepackage.pan_config.config_xml['urldb'],
+                "date_execution": EXECUTION_START_TIME,
+                "runtime":round(end_time - RUNTIME_START, 2),                
+                "total_problems": total_problems,
+                "entries":entries
+                }  
+        
+        with open(fname,'w') as fh:
+            json.dump(data,fh)
 
 def build_output_fname(parsed_args):
     # Build the name of the output file
@@ -119,7 +152,12 @@ def build_output_fname(parsed_args):
     else:
         limit_string = ""
 
-    output_fname = f'pan_analyzer_output_{EXECUTION_START_TIME}{devicegroup_string}{xml_string}{validators_string}{fixers_string}{limit_string}.txt'
+    if parsed_args.output == 'json':
+        extension = '.json'
+    else:    
+        extension = '.txt'
+
+    output_fname = f'pan_analyzer_output_{EXECUTION_START_TIME}{devicegroup_string}{xml_string}{validators_string}{fixers_string}{limit_string}'+extension
     return output_fname
 
 
@@ -152,6 +190,7 @@ def main():
 
     parser.add_argument("--debug", help="Write all debug output to pan_validator_debug_YYMMDD_HHMMSS.log", action='store_true')
     parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)
+    parser.add_argument("--output", help="Type File Output (text, json), default = text", type=str)
     parsed_args = parser.parse_args()
 
     configure_logging(parsed_args.debug, not parsed_args.quiet)
@@ -182,6 +221,7 @@ def main():
     start_time = time.time()
     profilepackage = load_config_package(configuration_settings, api_key, parsed_args.device_group,
                                          parsed_args.limit, parsed_args.xml)
+
     if parsed_args.fixer:
         fixers = {parsed_args.fixer: get_policy_fixers()[parsed_args.fixer]}
         problems, total_problems = run_policy_fixers(fixers, profilepackage, output_fname)
@@ -192,7 +232,7 @@ def main():
             validators = get_policy_validators()
         problems, total_problems = run_policy_validators(validators, profilepackage, output_fname)
 
-    write_analyzer_output(problems, output_fname, 'text')
+    write_analyzer_output(problems, output_fname, profilepackage, parsed_args.output)
     end_time = time.time()
 
     logger.info(f"Full run took {round(end_time - start_time, 2)} seconds")
