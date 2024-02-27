@@ -1,6 +1,7 @@
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,7 @@ def find_unused_addresses(profilepackage):
     pan_config = profilepackage.pan_config
 
     badentries = []
+    count_checks = 0
 
     logger.info ("*"*80)
     logger.info ("Checking for unused Address objects")
@@ -52,11 +54,18 @@ def find_unused_addresses(profilepackage):
                             addresses_and_groups_in_use.add(dest_elem.text)
 
         unused_addresses = sorted(set(addresses.keys()) - addresses_and_groups_in_use)
+        count_checks = len(set(addresses.keys()))
         for unused_address in unused_addresses:
             text = f"Device Group {device_group}'s Address {unused_address} is not in use for any policies or address groups"
-            badentries.append(BadEntry(data=[addresses[unused_address]], text=text, device_group=device_group, entry_type='Addresses'))
+            detail={
+                "device_group": device_group,
+                "entry_type":'Addresses',
+                "address": unused_address,
+                "extra":f"Total Addresses: {count_checks}, Addresses and Groups in use: {len(addresses_and_groups_in_use)}"                
+            }                
+            badentries.append(BadEntry(data=[addresses[unused_address]], text=text, device_group=device_group, entry_type='Addresses',Detail=parsed_details(detail)))
 
-    return badentries
+    return badentries, count_checks
 
 @register_policy_validator("UnusedAddressGroups", "AddressGroup objects that aren't in use")
 def find_unused_addressgroups(profilepackage):
@@ -65,7 +74,8 @@ def find_unused_addressgroups(profilepackage):
     pan_config = profilepackage.pan_config
 
     badentries = []
-
+    count_checks = 0
+    
     logger.info ("*"*80)
     logger.info ("Checking for unused Address Group objects")
 
@@ -106,8 +116,15 @@ def find_unused_addressgroups(profilepackage):
                             addresses_and_groups_in_use.add(dest_elem.text)
 
         unused_addressgroups = sorted((addressgroups.keys()) - addresses_and_groups_in_use)
+        count_checks = len(addressgroups.keys())
         for unused_addressgroup in unused_addressgroups:
             text = f"Device Group {device_group}'s Address Group {unused_addressgroup} is not in use for any policies or address groups"
-            badentries.append(BadEntry(data=[addressgroups[unused_addressgroup]], text=text, device_group=device_group, entry_type='AddressGroups'))
+            detail={
+                "device_group":device_group,
+                "entry_type": "AddressGroups",
+                "Addresses": unused_addressgroup,
+                "extra":f"Total Addresses: {count_checks}, Addresses and Groups in use: {len(addresses_and_groups_in_use)}"                
+            }
+            badentries.append(BadEntry(data=[addressgroups[unused_addressgroup]], text=text, device_group=device_group, entry_type='AddressGroups',Detail=parsed_details(detail)))
 
-    return badentries
+    return badentries, count_checks

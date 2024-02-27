@@ -2,6 +2,7 @@ import collections
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator, get_policy_validators, xml_object_to_dict
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +10,7 @@ def find_objects_needing_consolidation(equivalent_objects):
     # Takes as input the results from EquivalentServices
     # Returns a mapping of device groups to lists of objects that need to be consolidated
     objects_to_consolidate = collections.defaultdict(list)
-    for entries in equivalent_objects:
+    for entries in equivalent_objects[0]:
         dg_to_objects = collections.defaultdict(list)
         for dg, contents in entries.data:
             dg_to_objects[dg].append(contents)
@@ -86,6 +87,8 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
     pan_config = profilepackage.pan_config
     devicegroup_objects = profilepackage.devicegroup_objects
 
+    count_checks = 0
+
     logger.info ("*"*80)
     logger.info (f"Checking for unused {object_friendly_type} objects to consolidate")
 
@@ -95,7 +98,7 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
 
     if not dg_to_objects_to_consolidate:
         logger.info (f"There were no {object_friendly_type} to consolidate")
-        return dg_to_objects_to_consolidate
+        return dg_to_objects_to_consolidate, count_checks
 
     badentries = []
     for device_group, objects_to_consolidate in dg_to_objects_to_consolidate.items():
@@ -108,6 +111,7 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
         # and make those replacements!
         # First replace the contents of servicegroups
         for object_dg, object_type, object_entry in servicegroups_needing_replacement:
+            count_checks+=1
             object_policy_dict = xml_object_to_dict(object_entry)['entry']
             new_services = []
             replacements_made = {}
@@ -128,10 +132,17 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
             assert object_policy_dict['members']['member'] != new_services
             object_policy_dict['members']['member'] = new_services
             text = f"Replace the following Service members in {object_dg}'s {object_type} {object_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
-            badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type))
+            detail={
+                "device_group":object_dg,
+                "entry_type":object_type,
+                "entry_name":object_entry.get('name'),
+                "extra":f"object_entry.get('name')--->{object_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
+            }
+            badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type,Detail=parsed_details(detail)))
 
         # Then replace the contents of policies
         for policy_dg, policy_type, policy_entry in policies_needing_replacement:
+            count_checks += 1
             object_policy_dict = xml_object_to_dict(policy_entry)['entry']
             logger.debug(f"object_policy_dict: {object_policy_dict}")
             replacements_made = {}
@@ -166,8 +177,14 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
                 assert object_policy_dict['service']['member'] != new_services
                 object_policy_dict['service']['member'] = new_services
             text = f"Replace the following Service members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
-            badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
-    return badentries
+            detail={
+                "device_group":policy_dg,
+                "policy_type":policy_type,
+                "policy_name":object_entry.get('name'),
+                "extra":f"policy_entry.get('name')--->{policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
+            }
+            badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type,Detail=parsed_details(detail)))
+    return badentries, count_checks
 
 @register_policy_validator("FindConsolidatableServices", "Consolidate use of equivalent Service objects so only one object is used")
 def find_consolidatable_services(profilepackage):

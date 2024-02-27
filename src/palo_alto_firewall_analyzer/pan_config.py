@@ -41,10 +41,9 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_device_groups_hierarchy(self):
-        xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"
-
+        xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"        
         device_group_hierarchy_children = collections.defaultdict(list)
-        device_group_hierarchy_parent = {}
+        device_group_hierarchy_parent = {}        
         for devicegroup_elem in self.configroot.findall(xpath):
             name = devicegroup_elem.get('name')
             parent = devicegroup_elem.find('parent-dg')

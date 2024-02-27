@@ -1,6 +1,7 @@
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -10,8 +11,10 @@ def find_unused_security_profile_groups(profilepackage, object_type, object_frie
     devicegroup_objects = profilepackage.devicegroup_objects
     rule_limit_enabled = profilepackage.rule_limit_enabled
 
+    count_checks = 0
+
     if rule_limit_enabled:
-        return []
+        return [], count_checks
 
     badentries = []
 
@@ -33,16 +36,23 @@ def find_unused_security_profile_groups(profilepackage, object_type, object_frie
                         groups_in_use.add(service_child_element.text)
 
         unused_groups = sorted(set(groups.keys()) - groups_in_use)
+        count_checks = len(set(groups.keys()))
         for unused_group in unused_groups:
             text = f"Device Group {device_group}'s {object_friendly_type} {unused_group} is not used by any Security Policies"
+            detail={
+                "device_group":device_group,
+                "entry_type":object_type,
+                "entry_name":object_friendly_type,
+                "extra":f"object_friendly_type: {object_friendly_type}, Total Groups: {len(set(groups.keys()))}, Groups in Use: {len(groups_in_use)}, unused_group: {unused_group}"
+            }
             badentries.append(
-                BadEntry(data=[groups[unused_group]], text=text, device_group=device_group, entry_type=object_type))
-    return badentries
+                BadEntry(data=[groups[unused_group]], text=text, device_group=device_group, entry_type=object_type,Detail=parsed_details(detail)))
+    return badentries,count_checks
 
 
 @register_policy_validator("UnusedSecurityProfileGroups", "Security Profile Group objects that aren't in use")
 def find_unused_services(profilepackage):
     object_type = "SecurityProfileGroups"
-    object_friendly_type = "Security Profile Group"
-    badentries = find_unused_security_profile_groups(profilepackage, object_type, object_friendly_type)
-    return badentries
+    object_friendly_type = "Security Profile Group"    
+    badentries,count_checks = find_unused_security_profile_groups(profilepackage, object_type, object_friendly_type)
+    return badentries,count_checks

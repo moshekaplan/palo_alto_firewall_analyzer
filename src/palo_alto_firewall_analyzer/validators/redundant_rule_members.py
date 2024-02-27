@@ -2,6 +2,7 @@ import collections
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def find_redundant_addresses(profilepackage):
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
 
+    count_checks = 0
     badentries = []
 
     logger.info("*" * 80)
@@ -60,6 +62,7 @@ def find_redundant_addresses(profilepackage):
                     address_like_members = [elem.text for elem in rule_entry.findall(f'./{direction}/member')]
                     addressgroups_in_use = []
                     for address_like_member in address_like_members:
+                        count_checks+=1
                         if address_like_member in addressgroups_to_underlying_addresses:
                             addressgroups_in_use += [address_like_member]
                     # See which address objects are contained within the rule's other addressgroup objects:
@@ -74,8 +77,16 @@ def find_redundant_addresses(profilepackage):
                         entries_string = ", ".join([f"'{entry[0]}' is in '{entry[1]}'" for entry in entries])
                         direction_string = f"For {direction}: {entries_string}"
                         text += direction_string
-                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_remove), text=text, device_group=device_group, entry_type='Address'))
-    return badentries
+                    detail={
+                        "device_group":device_group,
+                        "entry_type":'Address',
+                        "rule_type": ruletype,
+                        "rule_name":rule_name,
+                        "extra": f"direction_string: {direction_string}"
+                    }
+                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_remove), text=text, device_group=device_group, entry_type='Address',Detail=parsed_details(detail)))
+                
+    return badentries, count_checks
 
 
 @register_policy_validator("RedundantRuleServices", "Detects rules with redundant Service entries")
@@ -84,7 +95,8 @@ def find_redundant_services(profilepackage):
     pan_config = profilepackage.pan_config
 
     badentries = []
-
+    count_checks = 0
+    
     logger.info("*" * 80)
     logger.info("Checking for redundant rule members")
 
@@ -105,6 +117,7 @@ def find_redundant_services(profilepackage):
                 service_members = [elem.text for elem in rule_entry.findall('./service/member')]
                 servicegroups_in_use = []
                 for service_like_member in service_members:
+                    count_checks+=1
                     if service_like_member in servicegroups_to_underlying_services:
                         servicegroups_in_use += [service_like_member]
                 # See which address objects are contained within the rule's other addressgroup objects:
@@ -117,5 +130,12 @@ def find_redundant_services(profilepackage):
                     rule_name = rule_entry.get('name')
                     entries_string = ", ".join([f"'{redundant_entry}' is in '{containing_entry}'" for redundant_entry, containing_entry in members_to_remove])
                     text = f"Device Group {device_group}'s {ruletype} '{rule_name}'\'s services list contains redundant members: {entries_string}"
-                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_remove), text=text, device_group=device_group, entry_type='Address'))
-    return badentries
+                    detail={
+                        "device_group":device_group,
+                        "entry_type":'Address',
+                        "rule_type": ruletype,
+                        "rule_name":rule_name,
+                        "extra": f"direction_string: {entries_string}"
+                    }
+                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_remove), text=text, device_group=device_group, entry_type='Address', Detail=parsed_details(detail)))
+    return badentries,count_checks

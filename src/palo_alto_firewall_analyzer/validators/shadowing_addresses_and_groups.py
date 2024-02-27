@@ -2,6 +2,7 @@ import collections
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,8 @@ def find_shadowing_addresses_and_groups(profilepackage):
         return []
 
     badentries = []
-
+    count_checks = 0
+    
     logger.info("*" * 80)
     logger.info("Checking for shadowing Address and Address Group objects")
 
@@ -79,13 +81,25 @@ def find_shadowing_addresses_and_groups(profilepackage):
 
                 data = [object_entries[obj_type][shadowing_address_name]] + shadowing_addresses + shadowing_addressgroups
                 text = f"Device Group {device_group}'s {obj_type} {shadowing_address_name} is already present {suffix_text}"
+                detail={
+                    "device_group":device_group,
+                    "entry_type":obj_type,
+                    "shadowing_address_name":shadowing_address_name                    
+                }
                 badentries.append(
-                    BadEntry(data=data, text=text, device_group=device_group, entry_type=obj_type))
-
+                    BadEntry(data=data, text=text, device_group=device_group, entry_type=obj_type,Detail=parsed_details(detail)))
+                count_checks+=1
+                
         for local_overlap in local_shadowing_names:
             text = f"Device Group {device_group}'s contains both an Address and Address Group with the same name of '{local_overlap}' Address: {object_entries['Addresses'][local_overlap]}, AddressGroups: {object_entries['AddressGroups'][local_overlap]}"
             data = [object_entries['AddressGroups'][local_overlap],object_entries['Addresses'][local_overlap]]
+            detail={
+                "device_group":device_group,
+                "entry_type":'Addresses',
+                "extra": f"local_overlap: {local_overlap}, Address: {object_entries['Addresses'][local_overlap]}, AddressGroups: {object_entries['AddressGroups'][local_overlap]}"
+            }
             badentries.append(BadEntry(data=data, text=text, device_group=device_group,
-                                       entry_type='Addresses'))
+                                       entry_type='Addresses',Detail=parsed_details(detail)))
+            count_checks+=1
 
-    return badentries
+    return badentries,count_checks

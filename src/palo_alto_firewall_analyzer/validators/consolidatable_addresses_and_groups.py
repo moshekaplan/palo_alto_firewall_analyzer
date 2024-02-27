@@ -3,14 +3,15 @@ import copy
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator, get_policy_validators, xml_object_to_dict
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
 def find_objects_needing_consolidation(equivalent_objects):
     # Takes as input the results from EquivalentAddresses
     # Returns a mapping of device groups to lists of objects that need to be consolidated
-    objects_to_consolidate = collections.defaultdict(list)
-    for entries in equivalent_objects:
+    objects_to_consolidate = collections.defaultdict(list)    
+    for entries in equivalent_objects[0]:
         dg_to_objects = collections.defaultdict(list)
         for dg, contents in entries.data:
             dg_to_objects[dg].append(contents)
@@ -83,11 +84,12 @@ def find_objects_policies_needing_replacement(pan_config, devicegroup_objects, d
 
 def replace_addressgroup_contents(addressgroups_needing_replacement, address_to_replacement):
     badentries = []
+    count_checks = 0
     for object_dg, object_type, object_entry in addressgroups_needing_replacement:
         object_policy_dict = xml_object_to_dict(object_entry)['entry']
         new_addresses = []
         replacements_made = {}
-
+        count_checks += 1
         # If it's an addressgroup with only one member, it'll be parsed as a string, not a list
         if isinstance(object_policy_dict['static']['member'], str):
             member_to_replace = object_policy_dict['static']['member']
@@ -112,8 +114,14 @@ def replace_addressgroup_contents(addressgroups_needing_replacement, address_to_
 
         object_policy_dict['static']['member'] = new_addresses
         text = f"Replace the following Address members in {object_dg}'s {object_type} {object_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
-        badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type))
-    return badentries
+        detail={
+            "device_group":object_dg,
+            "entry_type":object_type,
+            "entry_name":object_entry.get('name'),
+            "extra":f"object_entry_name: ({object_entry.get('name')}): {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
+        }
+        badentries.append(BadEntry(data=[object_entry, object_policy_dict], text=text, device_group=object_dg, entry_type=object_type,Detail=parsed_details(detail)))
+    return badentries,count_checks
 
 def replace_member_contents(address_like_entries, address_to_replacement, replacements_made):
     replacements_made = copy.deepcopy(replacements_made)
@@ -154,7 +162,9 @@ def replace_member_contents(address_like_entries, address_to_replacement, replac
 
 def replace_policy_contents(policies_needing_replacement, address_to_replacement):
     badentries = []
+    count_checks = 0
     for policy_dg, policy_type, policy_entry in policies_needing_replacement:
+        count_checks+=1
         object_policy_dict = xml_object_to_dict(policy_entry)['entry']
         logger.debug(f"object_policy_dict: {object_policy_dict}")
         replacements_made = {}
@@ -173,13 +183,20 @@ def replace_policy_contents(policies_needing_replacement, address_to_replacement
                 if object_policy_dict[translation].get('static-ip', {}).get('translated-address', {}).get('member'):
                     object_policy_dict[translation]['static-ip']['translated-address']['member'], replacements_made = replace_member_contents(object_policy_dict[translation]['static-ip']['translated-address']['member'], address_to_replacement, replacements_made)
         text = f"Replace the following Address members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
-        badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
-    return badentries
+        detail={
+            "device_group": policy_dg,
+            "entry_type": policy_type,
+            "policy_type": policy_type,
+            "policy_entry_name": policy_entry.get('name'),
+            "extra": f"{policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
+        }
+        badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type,Detail=parsed_details(detail)))
+    return badentries, count_checks
 
 def consolidate_address_like_objects(profilepackage, object_type, object_friendly_type, validator_function):
     pan_config = profilepackage.pan_config
     devicegroup_objects = profilepackage.devicegroup_objects
-
+    count_checks = 0
     logger.info ("*"*80)
     logger.info (f"Checking for {object_friendly_type} objects to consolidate")
 
@@ -188,7 +205,7 @@ def consolidate_address_like_objects(profilepackage, object_type, object_friendl
     dg_to_objects_to_consolidate = find_objects_needing_consolidation(equivalent_objects)
     if not dg_to_objects_to_consolidate:
         logger.info (f"There were no {object_friendly_type} to consolidate")
-        return dg_to_objects_to_consolidate
+        return dg_to_objects_to_consolidate, count_checks
 
     badentries = []
     for device_group, objects_to_consolidate in dg_to_objects_to_consolidate.items():
@@ -199,11 +216,15 @@ def consolidate_address_like_objects(profilepackage, object_type, object_friendl
         # Now that we know which objects need replacements, we can iterate through
         # and make those replacements!
         # First replace the contents of addressgroups
-        badentries += replace_addressgroup_contents(addressgroups_needing_replacement, address_to_replacement)
+        badentries_ret,count_checks_ret = replace_addressgroup_contents(addressgroups_needing_replacement, address_to_replacement)
+        badentries+=badentries_ret
+        count_checks+=count_checks_ret
         # Then replace the contents of policies
-        badentries += replace_policy_contents(policies_needing_replacement, address_to_replacement)
+        badentries_ret,count_checks_ret = replace_policy_contents(policies_needing_replacement, address_to_replacement)
+        badentries+=badentries_ret
+        count_checks+=count_checks_ret
 
-    return badentries
+    return badentries, count_checks
 
 @register_policy_validator("FindConsolidatableAddresses", "Consolidate use of equivalent Address objects so only one object is used")
 def find_consolidatable_addresses(profilepackage):

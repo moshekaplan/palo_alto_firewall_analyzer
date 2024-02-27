@@ -14,6 +14,8 @@ import palo_alto_firewall_analyzer.fixers
 from palo_alto_firewall_analyzer.core import get_policy_validators, get_policy_fixers, ConfigurationSettings
 from palo_alto_firewall_analyzer.pan_helpers import load_config_package, load_API_key
 
+from palo_alto_firewall_analyzer.scripts.pan_details import get_json_detail
+
 DEFAULT_CONFIG_DIR = os.path.expanduser("~" + os.sep + ".pan_policy_analyzer" + os.sep)
 DEFAULT_CONFIGFILE = DEFAULT_CONFIG_DIR + "PAN_CONFIG.cfg"
 DEFAULT_API_KEYFILE = DEFAULT_CONFIG_DIR + "API_KEY.txt"
@@ -60,19 +62,22 @@ def run_policy_fixers(fixers, profilepackage, output_fname):
 def run_policy_validators(validators, profilepackage, output_fname):
     problems = {}
     total_problems = 0
+    total_checks = 0
     logger.info("Running validators")
 
     for name, validator_values in validators.items():
         validator_name, validator_description, validator_function = validator_values
-        validator_problems = validator_function(profilepackage)
-        problems[(validator_name, validator_description)] = validator_problems
-        total_problems += len(validator_problems)
+        validator_problems, count_checks = validator_function(profilepackage)
+        problems[(validator_name, validator_description),count_checks] = validator_problems
+        total_problems += len(validator_problems)        
+        total_checks += count_checks
+        
+    return problems, total_problems, total_checks
 
-    return problems, total_problems
 
-
-def write_analyzer_output(problems, fname, profilepackage, out_format = 'text'):
-    supported_output_formats = ["text", "json"]
+def write_analyzer_output(problems, fname, profilepackage, sum_total_checks, out_format = 'text'):
+    
+    supported_output_formats = ["text", "json"]    
     if out_format is None:
         out_format = 'text'
         
@@ -86,7 +91,7 @@ def write_analyzer_output(problems, fname, profilepackage, out_format = 'text'):
                 validator_name, validator_description = validator_info
 
                 fh.write("#" * 80 + '\n')
-                fh.write(f"{validator_name}: {validator_description} ({len(problem_entries)})\n")
+                fh.write(f"{validator_name}: {validator_description} ({len(problem_entries)}/{sum_total_checks})\n")
                 fh.write("#" * 80 + '\n')
                 for problem_entry in problem_entries:
                     # fh.write(f"Output for config name: {config_name} \n\n")
@@ -97,19 +102,25 @@ def write_analyzer_output(problems, fname, profilepackage, out_format = 'text'):
                 fh.write('\n')
     elif out_format == 'json':
         #build json
-        total_problems = 0
-        entries = []     
+        total_problems = 0        
+        entries = [] 
+        #print(problems)       
         for validator_info, problem_entries in problems.items():
-            validator_name, validator_description = validator_info            
+            #TODO: Can I doing better?
+            validator_name, validator_description = validator_info[0]
+            total_checks = validator_info[1]            
             
             problems = []
-            for problem_entry in problem_entries:                
-                problem = {"desc":problem_entry.text}                
+            for problem_entry in problem_entries:
+                if problem_entry.Detail is not None:                   
+                    problem = {"desc":problem_entry.text,"detail":get_json_detail(problem_entry.Detail)}
+                else:
+                    problem = {"desc":problem_entry.text}
+                    
                 problems.append(problem)
                 total_problems+=1
                 
-            entry = {"validator_name":validator_name, "problems":problems}            
-            
+            entry = {"validator_name":validator_name, "total_checks": total_checks,"problems":problems}                        
             entries.append(entry)
         
         end_time = time.time()
@@ -120,6 +131,7 @@ def write_analyzer_output(problems, fname, profilepackage, out_format = 'text'):
                 "date_execution": EXECUTION_START_TIME,
                 "runtime":round(end_time - RUNTIME_START, 2),                
                 "total_problems": total_problems,
+                "total_checks": sum_total_checks,                
                 "entries":entries
                 }  
         
@@ -230,9 +242,9 @@ def main():
             validators = {validator: get_policy_validators()[validator] for validator in parsed_args.validator}
         else:
             validators = get_policy_validators()
-        problems, total_problems = run_policy_validators(validators, profilepackage, output_fname)
-
-    write_analyzer_output(problems, output_fname, profilepackage, parsed_args.output)
+        problems, total_problems, total_checks = run_policy_validators(validators, profilepackage, output_fname)    
+        
+    write_analyzer_output(problems, output_fname, profilepackage, total_checks, parsed_args.output)
     end_time = time.time()
 
     logger.info(f"Full run took {round(end_time - start_time, 2)} seconds")

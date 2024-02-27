@@ -2,7 +2,9 @@ import collections
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
-from palo_alto_firewall_analyzer.core import xml_object_to_dict
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
+#from palo_alto_firewall_analyzer.core import xml_object_to_dict
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +17,8 @@ def find_missing_group_profile(profilepackage):
     logger.info("Checking for rules with no security profiles attached")
 
     badentries = []
+    count_checks = 0
+    
     device_groups_to_ruletypes_to_policies_needing_updates = {}
     for i, device_group in enumerate(device_groups):
         device_groups_to_ruletypes_to_policies_needing_updates[device_group] = collections.defaultdict(list)
@@ -23,12 +27,13 @@ def find_missing_group_profile(profilepackage):
             logger.info(f"({i+1}/{len(device_groups)}) Checking {device_group}'s {ruletype}")
 
             for entry in rules:
+                count_checks += 1
                 rule_name = entry.get('name')
 
                 disabled = (entry.find('disabled') is not None and entry.find('disabled').text == 'yes')
 
                 # Disabled rules can be ignored
-                if disabled == 'yes':
+                if disabled == 'yes':                    
                     continue
 
                 # Only allow rules trigger security profile groups
@@ -50,5 +55,11 @@ def find_missing_group_profile(profilepackage):
                 # 3) The rule does not have any security profile group or profile attached
                 text = f"Device Group {device_group}'s {ruletype} '{rule_name}' does not have a Security Profile Group attached!"
                 logger.info(text)
-                badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype) )
-    return badentries
+                detail={
+                    "device_group":device_group,
+                    "entry_type":ruletype,
+                    "rule_type":ruletype,
+                    "rule_name":rule_name
+                }
+                badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype,Detail=parsed_details(detail)) )
+    return badentries,count_checks
