@@ -189,11 +189,12 @@ def xml_object_to_dict1(xml_obj):
     obj_dict = xmltodict.parse(obj_xml_string)
     return obj_dict
 
+
+@functools.lru_cache(maxsize=None)
 def xml_object_to_dict(xml_obj):
-    obj_xml_string = xml.etree.ElementTree.tostring(xml_obj) 
-    
+    obj_xml_string = xml.etree.ElementTree.tostring(xml_obj)    
     root = xml.etree.ElementTree.fromstring(obj_xml_string)    
-    
+    """List attributes for remove, because the validators not working with attributes, no parsed good"""
     list_atr_remove = ['loc']
     
     def remove_loc(elements,atr):

@@ -74,10 +74,44 @@ def run_policy_validators(validators, profilepackage, output_fname):
         
     return problems, total_problems, total_checks
 
+def wtrite_analyzer_output_json(problems, fname, profilepackage, sum_total_checks):
+    #build json
+    total_problems = 0
+    entries = []
+    #print(problems)       
+    for validator_info, problem_entries in problems.items():
+        #TODO: Can I doing better?
+        validator_name, validator_description = validator_info[0]
+        total_checks = validator_info[1]            
+        problems = []
+        for problem_entry in problem_entries:
+            if problem_entry.Detail is not None:                   
+                problem = {"desc":problem_entry.text,"detail":get_json_detail(problem_entry.Detail)}
+            else:
+                problem = {"desc":problem_entry.text}                    
+                problems.append(problem)
+                total_problems+=1
+            entry = {"validator_name":validator_name, "total_checks": total_checks,"problems":problems}
+            entries.append(entry)
 
-def write_analyzer_output(problems, fname, profilepackage, sum_total_checks, out_format = 'text'):
-    
-    supported_output_formats = ["text", "json"]    
+        end_time = time.time()
+
+        data = {"config_version":profilepackage.pan_config.config_xml['version'],
+                "detail-version":profilepackage.pan_config.config_xml['detail-version'],
+                "urldb":profilepackage.pan_config.config_xml['urldb'],
+                "date_execution": EXECUTION_START_TIME,
+                "runtime":round(end_time - RUNTIME_START, 2),
+                "total_problems": total_problems,
+                "total_checks": sum_total_checks,
+                "entries":entries
+                }  
+        
+        with open(fname,'w') as fh:
+            json.dump(data,fh)
+
+
+def write_analyzer_output(problems, fname, profilepackage, sum_total_checks, out_format = 'text'):    
+    supported_output_formats = ["text", "json"]
     if out_format is None:
         out_format = 'text'
         
@@ -101,42 +135,8 @@ def write_analyzer_output(problems, fname, profilepackage, sum_total_checks, out
                     #    fh.write('(none)\n')
                 fh.write('\n')
     elif out_format == 'json':
-        #build json
-        total_problems = 0        
-        entries = [] 
-        #print(problems)       
-        for validator_info, problem_entries in problems.items():
-            #TODO: Can I doing better?
-            validator_name, validator_description = validator_info[0]
-            total_checks = validator_info[1]            
-            
-            problems = []
-            for problem_entry in problem_entries:
-                if problem_entry.Detail is not None:                   
-                    problem = {"desc":problem_entry.text,"detail":get_json_detail(problem_entry.Detail)}
-                else:
-                    problem = {"desc":problem_entry.text}
-                    
-                problems.append(problem)
-                total_problems+=1
-                
-            entry = {"validator_name":validator_name, "total_checks": total_checks,"problems":problems}                        
-            entries.append(entry)
-        
-        end_time = time.time()
-        
-        data = {"config_version":profilepackage.pan_config.config_xml['version'],
-                "detail-version":profilepackage.pan_config.config_xml['detail-version'],
-                "urldb":profilepackage.pan_config.config_xml['urldb'],
-                "date_execution": EXECUTION_START_TIME,
-                "runtime":round(end_time - RUNTIME_START, 2),                
-                "total_problems": total_problems,
-                "total_checks": sum_total_checks,                
-                "entries":entries
-                }  
-        
-        with open(fname,'w') as fh:
-            json.dump(data,fh)
+        wtrite_analyzer_output_json(problems, fname, profilepackage, sum_total_checks)
+
 
 def build_output_fname(parsed_args):
     # Build the name of the output file
@@ -164,12 +164,12 @@ def build_output_fname(parsed_args):
     else:
         limit_string = ""
 
-    if parsed_args.output == 'json':
+    if parsed_args.output_format == 'json':
         extension = '.json'
-    else:    
+    else:
         extension = '.txt'
 
-    output_fname = f'pan_analyzer_output_{EXECUTION_START_TIME}{devicegroup_string}{xml_string}{validators_string}{fixers_string}{limit_string}'+extension
+    output_fname = f'pan_analyzer_output_{EXECUTION_START_TIME}{devicegroup_string}{xml_string}{validators_string}{fixers_string}{limit_string}{extension}'
     return output_fname
 
 
@@ -201,8 +201,8 @@ def main():
     parser.add_argument("--xml", help="Process an XML file from 'Export Panorama configuration version'. This skips validators that require an API key")
 
     parser.add_argument("--debug", help="Write all debug output to pan_validator_debug_YYMMDD_HHMMSS.log", action='store_true')
-    parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)
-    parser.add_argument("--output", help="Type File Output (text, json), default = text", type=str)
+    parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)    
+    parser.add_argument("--output-format", help="Type File Output, default='text'", type=str, choices= ['text', 'json'])
     parsed_args = parser.parse_args()
 
     configure_logging(parsed_args.debug, not parsed_args.quiet)

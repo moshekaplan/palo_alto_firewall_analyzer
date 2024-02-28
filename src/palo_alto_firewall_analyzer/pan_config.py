@@ -18,7 +18,7 @@ class PanConfig:
     with the 'show config' command.
     'show config' is used instead of `export configuration` so that
     the xpath's used for retrieving values from the config
-     will be the same as those used with the XML API.
+    will be the same as those used with the XML API.
     """
 
     def __init__(self, configdata: str, from_file=False):
@@ -29,7 +29,7 @@ class PanConfig:
             fake_result.append(conf)
             # fake_response.append(fake_result)
             self.configroot = fake_result
-            self.config_xml = {"version": conf.get("version"),"urldb": conf.get("urldb"),"detail-version":conf.get("detail-version")}                        
+            self.config_xml = {"version": conf.get("version"),"urldb": conf.get("urldb"),"detail-version":conf.get("detail-version")}
         else:
             self.configroot = xml.etree.ElementTree.fromstring(configdata).find('./result')
 
@@ -41,9 +41,9 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_device_groups_hierarchy(self):
-        xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"        
+        xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"
         device_group_hierarchy_children = collections.defaultdict(list)
-        device_group_hierarchy_parent = {}        
+        device_group_hierarchy_parent = {}
         for devicegroup_elem in self.configroot.findall(xpath):
             name = devicegroup_elem.get('name')
             parent = devicegroup_elem.find('parent-dg')
