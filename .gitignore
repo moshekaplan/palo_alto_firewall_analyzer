@@ -38,3 +38,4 @@ share/python-wheels/
 MANIFEST
 .idea/
 venv/
+.flake8
