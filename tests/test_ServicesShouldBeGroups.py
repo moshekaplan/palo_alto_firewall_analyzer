@@ -67,8 +67,9 @@ class TestServicesShouldBeGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config)
 
         _, _, validator_function = get_policy_validators()['ServicesShouldBeGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 3)
         self.assertEqual(results[0].data[0], 'SecurityPreRules')
         self.assertEqual(results[0].data[1].get('name'), 'sservices_can_be_group')

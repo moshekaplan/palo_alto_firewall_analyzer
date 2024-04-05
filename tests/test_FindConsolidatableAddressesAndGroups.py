@@ -75,8 +75,9 @@ class TestFindConsolidatableAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config)
 
         _, _, validator_function = get_policy_validators()['FindConsolidatableAddresses']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0].get('name'), 'address_group3')
         self.assertEqual(results[0].data[1]['static']['member'][0], 'unique_netmask2')
@@ -130,8 +131,9 @@ class TestFindConsolidatableAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config)
 
         _, _, validator_function = get_policy_validators()['FindConsolidatableAddressGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0].get('name'), 'rule3')
         self.assertEqual(results[0].data[1]['source']['member'], 'address_group1')

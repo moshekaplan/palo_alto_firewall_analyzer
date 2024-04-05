@@ -147,12 +147,11 @@ Detail = collections.namedtuple('Detail', ['policy_type', 'policy_name',
                                            'protocol', 'port', 
                                            'allowed_group_profiles',
                                            'group_profile_setting', 'address',
-                                           'fqdn', 'ip', 'ip_mask', 'loc', 
+                                           'fqdn', 'ip', 'ip_mask', 'loc',
                                            'mandated_log_profile', 'log_setting',
                                            'object_entry_name', 'policy_entry_name',
                                            'shadowing_address_name', 'zone_type',
-                                           'zones', 'extra'
-                                          ]
+                                           'zones', 'dg', 'extra']
                                 )
 BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', 'entry_type', 'Detail'])
 

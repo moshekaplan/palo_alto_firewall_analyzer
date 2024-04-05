@@ -44,8 +44,9 @@ class TestBadLogSetting(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config, mandated_log_profile)
 
         _, _, validator_function = get_policy_validators()['BadLogSetting']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 4)
         self.assertEqual(results[0].data[0].get('name'), 'missing_log-setting')
         self.assertEqual(results[1].data[0].get('name'), 'wrong_log-setting')
 
@@ -66,8 +67,9 @@ class TestBadLogSetting(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         profilepackage = self.create_profilepackage(pan_config, mandated_log_profile)
         _, _, validator_function = get_policy_validators()['BadLogSetting']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
+        self.assertEqual(count_checks, 0)
 
 
 if __name__ == "__main__":

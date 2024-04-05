@@ -49,8 +49,9 @@ class TestRedundantRuleServices(unittest.TestCase):
 
         profilepackage = self.create_profilepackage(pan_config)
         _, _, validator_function = get_policy_validators()['RedundantRuleServices']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 2)
         ruletype, rule_entry, members_to_remove = results[0].data
         self.assertEqual(ruletype, 'SecurityPreRules')
         self.assertEqual(rule_entry.get('name'), 'same_zone_rule')

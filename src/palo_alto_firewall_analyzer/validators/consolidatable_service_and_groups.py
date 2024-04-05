@@ -180,7 +180,7 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
             detail={
                 "device_group":policy_dg,
                 "policy_type":policy_type,
-                "policy_name":object_entry.get('name'),
+                "policy_name":policy_entry.get('name'),
                 "extra":f"policy_entry.get('name')--->{policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
             }
             badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type,Detail=parsed_details(detail)))

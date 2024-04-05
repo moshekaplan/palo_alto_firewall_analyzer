@@ -43,8 +43,9 @@ class TestFQDNContainsIP(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config)
 
         _, _, validator_function = get_policy_validators()['FQDNContainsIP']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(results[0].data.get('name'), 'fqdn_with_ip')
 
 

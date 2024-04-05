@@ -51,7 +51,7 @@ def find_bad_log_setting(profilepackage):
                         "rule_name":rule_name,
                         "entry_type":ruletype
                         }
-                    badentries.append(BadEntry(data=[entry, mandated_log_profile], text=text, device_group=device_group, entry_type=ruletype))
+                    badentries.append(BadEntry(data=[entry, mandated_log_profile], text=text, device_group=device_group, entry_type=ruletype, Detail=parsed_details(detail)))
                 elif log_setting != mandated_log_profile:
                     text = f"Device Group {device_group}'s {ruletype} '{rule_name}' doesn't use log profile '{mandated_log_profile}', instead it uses '{log_setting}'"
                     logger.debug(text)

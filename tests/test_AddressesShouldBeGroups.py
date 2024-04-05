@@ -5,7 +5,6 @@ from palo_alto_firewall_analyzer.core import get_policy_validators
 from palo_alto_firewall_analyzer.core import ProfilePackage, ConfigurationSettings
 from palo_alto_firewall_analyzer.pan_config import PanConfig
 
-
 class TestAddressesShouldBeGroups(unittest.TestCase):
     @staticmethod
     def create_profilepackage(pan_config):
@@ -55,11 +54,11 @@ class TestAddressesShouldBeGroups(unittest.TestCase):
         </config></result></response>
         """
         pan_config = PanConfig(test_xml)
-        profilepackage = self.create_profilepackage(pan_config)
-
+        profilepackage = self.create_profilepackage(pan_config)        
         _, _, validator_function = get_policy_validators()['AddressesShouldBeGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)        
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(len(results[0].data), 3)
         self.assertEqual(results[0].data[0], 'SecurityPreRules')
         self.assertEqual(results[0].data[1].get('name'), 'source_can_be_group')

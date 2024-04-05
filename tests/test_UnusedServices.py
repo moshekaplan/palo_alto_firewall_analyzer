@@ -77,8 +77,9 @@ class TestUnusedServices(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, shared_servicegroups, shared_securityprerules, dg_services, dg_securityprerules, dg_natrules)
 
         _, _, find_unused_services = get_policy_validators()['UnusedServices']
-        results = find_unused_services(profilepackage)
+        results, count_checks = find_unused_services(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 5)
         self.assertEqual(len(results[0].data), 1)
         self.assertEqual(results[0].data[0].get('name'), 'service_unused_shared')
         self.assertEqual(results[0].device_group, 'shared')

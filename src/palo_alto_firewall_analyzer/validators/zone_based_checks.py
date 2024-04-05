@@ -382,7 +382,7 @@ def find_extra_rules(profilepackage):
 
                 if len(calculated_src_zones) == 1 and calculated_src_zones == calculated_dest_zones:
                     text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' was calculated to only need the same source and dest zone of '{list(calculated_dest_zones)[0]}'."
-                    logger.info (text)
+                    logger.info(text)
                     detail={
                             "device_group": device_group,
                             "entry_type": ruletype,
@@ -391,5 +391,5 @@ def find_extra_rules(profilepackage):
                             "zone_type": zonetype,                            
                             "extra": f"calculated_dest_zones_list: {list(calculated_dest_zones)[0]}"
                         }
-                    badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype) )
+                    badentries.append(BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype, Detail=parsed_details(detail)))
     return badentries,count_checks

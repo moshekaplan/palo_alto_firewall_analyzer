@@ -51,8 +51,9 @@ class TestIPWithResolvingFQDN(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config)
 
         _, _, validator_function = get_policy_validators()['IPWithResolvingFQDN']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(results[0].data[0].get('name'), 'redundant_ip')
         self.assertEqual(results[0].data[1], 'valid.tld')
 

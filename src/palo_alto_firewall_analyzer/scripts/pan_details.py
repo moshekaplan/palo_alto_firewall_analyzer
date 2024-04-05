@@ -35,6 +35,7 @@ def parsed_details(details):
         policy_entry_name=get_value(details.get('policy_entry_name')),
         zone_type=get_value(details.get('zone_type')),
         zones=get_value(details.get('zones')),
+        dg=get_value(details.get('dg')),
         extra=get_value(details.get('extra'))
     )
     return detail
@@ -65,6 +66,7 @@ def get_json_detail(detail):
                     "policy_entry_name": detail.policy_entry_name,
                     "zone_type": detail.zone_type,
                     "zones": detail.zones,
+                    "dg": detail.dg,
                     "extra": detail.extra
                     }
     return json_detail

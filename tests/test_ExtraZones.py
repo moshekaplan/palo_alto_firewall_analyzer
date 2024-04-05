@@ -71,7 +71,7 @@ class TestExtraZones(unittest.TestCase):
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'dest_zone']
         _, _, validator_function = get_policy_validators()['ExtraZones']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].data.get('name'), 'extra_zone_rule')
 
@@ -102,7 +102,7 @@ class TestExtraZones(unittest.TestCase):
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'dest_zone']
         _, _, validator_function = get_policy_validators()['ExtraZones']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].data.get('name'), 'extra_zone_rule')
 
@@ -131,7 +131,7 @@ class TestExtraZones(unittest.TestCase):
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'dest_zone']
         _, _, validator_function = get_policy_validators()['ExtraZones']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
 
 
@@ -160,8 +160,9 @@ class TestExtraZones(unittest.TestCase):
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'dest_zone']
         _, _, validator_function = get_policy_validators()['ExtraZones']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
+        self.assertEqual(count_checks, 2)
 
 if __name__ == "__main__":
     unittest.main()

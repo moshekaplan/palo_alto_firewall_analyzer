@@ -81,9 +81,10 @@ class TestUnusedAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, shared_addressgroups, shared_securityprerules, shared_natprerules, dg_addresses, dg_securityprerules)
 
         _, _, validator_function = get_policy_validators()['UnusedAddresses']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
 
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 5)
         self.assertEqual(len(results[0].data), 1)
         self.assertEqual(results[0].data[0].get('name'), 'address_unused')
         self.assertEqual(results[0].device_group, 'shared')

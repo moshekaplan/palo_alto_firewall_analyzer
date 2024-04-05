@@ -79,16 +79,16 @@ def find_shadowing_objects(profilepackage, object_type):
                 same_text = "and the contents are NOT equivalent"
             data = names_to_dg_obj_from_parent_dgs[overlapping_name] + [[device_group, local_obj]]
             text = f"Device Group {device_group}'s {object_type} '{overlapping_name}' is already present in Device Group {sorted_dgs} {same_text}"
-            detail={
-                "device_group":device_group,
-                "entry_type":object_type,
-                "extra":f"sorted_dgs: {sorted_dgs}, text: {same_text}, overlapping_name: {overlapping_name}"
+            detail = {
+                "device_group": device_group,
+                "entry_type": object_type,
+                "extra": f"sorted_dgs: {sorted_dgs}, text: {same_text}, overlapping_name: {overlapping_name}"
             }
             badentries.append(
-                BadEntry(data=data, text=text, device_group=device_group, entry_type=object_type))
-            count_checks+=1
+                BadEntry(data=data, text=text, device_group=device_group, entry_type=object_type, Detail=parsed_details(detail)))
+            count_checks += 1
             
-    return badentries,count_checks
+    return badentries, count_checks
 
 
 @register_policy_validator("ShadowingServices", "Service objects that have the same name and shadow each other")

@@ -1,8 +1,10 @@
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
+
 
 def get_all_rules_for_dg(device_group, device_group_hierarchy_parent, devicegroup_objects):
     """
@@ -58,16 +60,18 @@ def find_superseding(device_group_filter, transformed_rules):
     :return:
     """
     superseding_rules = []
+    count_checks = 0
     for i, rule_tuple in enumerate(transformed_rules):
         dg, ruletype, rule_name, rule_entry, rule_values = rule_tuple
         for prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry, prior_rule_values in transformed_rules[:i]:
             # Only compare the rules in the device group of interest
+            count_checks += 1
             if prior_dg != device_group_filter:
                 continue
             if is_superseding(rule_values, prior_rule_values):
                 superseding_rules.append([(prior_dg, prior_ruletype, prior_rule_name, prior_rule_entry),
                                           (dg, ruletype, rule_name, rule_entry)])
-    return superseding_rules
+    return superseding_rules, count_checks
 
 
 def transform_rules(rules):
@@ -112,7 +116,7 @@ def find_superseding_rules(profilepackage):
         # As security rules are inherited from parent device groups, we'll need to check those too
         all_rules = get_all_rules_for_dg(device_group, device_group_hierarchy_parent, devicegroup_objects)
         transformed_rules = transform_rules(all_rules)
-        superseding_rules = find_superseding(device_group, transformed_rules)
+        superseding_rules, count_checks = find_superseding(device_group, transformed_rules)
 
         # Report overlapping rules
         for prior_tuple, superseding_tuple in superseding_rules:
@@ -121,7 +125,13 @@ def find_superseding_rules(profilepackage):
 
             text = f"{prior_dg}'s {prior_ruletype} '{prior_rule_name}' is superseded by {dg}'s {ruletype} '{rule_name}'"
             logger.debug(text)
+            detail = {"entry_type": ruletype,
+                      "device_group": device_group,
+                      "rule_type": ruletype,
+                      "rule_name": rule_name,
+                      "dg": dg,
+                      "extra": f"prior_dg: {prior_dg}, prior_ruletype: {prior_ruletype}, prior_rule_name: {prior_rule_name}"}
             badentries.append(
-                BadEntry(data=(prior_tuple, superseding_tuple), text=text, device_group=device_group, entry_type=None))
+                BadEntry(data=(prior_tuple, superseding_tuple), text=text, device_group=device_group, entry_type=None, Detail=parsed_details(detail)))
 
-    return badentries
+    return badentries, count_checks

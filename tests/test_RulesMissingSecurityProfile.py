@@ -45,8 +45,9 @@ class TestRulesMissingSecurityProfile(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config, mandated_log_profile)
 
         _, _, validator_function = get_policy_validators()['RulesMissingSecurityProfile']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 5)
         self.assertEqual(results[0].data.get('name'), 'nothing_assigned')
         self.assertEqual(results[1].data.get('name'), 'group_of_none_assigned')
 
