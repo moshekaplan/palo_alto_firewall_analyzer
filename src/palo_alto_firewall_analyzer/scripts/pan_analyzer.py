@@ -73,6 +73,7 @@ def run_policy_validators(validators, profilepackage, output_fname):
         total_checks += count_checks
     return problems, total_problems, total_checks
 
+
 def write_analyzer_output_json(problems, fname, profilepackage, sum_total_checks):
     # build json
     total_problems = 0
@@ -92,13 +93,13 @@ def write_analyzer_output_json(problems, fname, profilepackage, sum_total_checks
         entries.append(entry)
     end_time = time.time()
     data = {"config_version": profilepackage.pan_config.config_xml['version'],
-                "detail-version": profilepackage.pan_config.config_xml['detail-version'],
-                "urldb": profilepackage.pan_config.config_xml['urldb'],
-                "date_execution": EXECUTION_START_TIME,
-                "runtime": round(end_time - RUNTIME_START, 2),
-                "total_problems": total_problems,
-                "total_checks": sum_total_checks,
-                "entries": entries
+            "detail-version": profilepackage.pan_config.config_xml['detail-version'],
+            "urldb": profilepackage.pan_config.config_xml['urldb'],
+            "date_execution": EXECUTION_START_TIME,
+            "runtime": round(end_time - RUNTIME_START, 2),
+            "total_problems": total_problems,
+            "total_checks": sum_total_checks,
+            "entries": entries
             }
 
     with open(fname, 'w') as fh:
@@ -156,14 +157,14 @@ def build_output_fname(parsed_args):
         limit_string = "_limit" + str(parsed_args.limit)
     else:
         limit_string = ""
-        
+
     if parsed_args.output_format == 'json':
         extension = '.json'
     else:
         extension = '.txt'
 
     output_fname = f'pan_analyzer_output_{EXECUTION_START_TIME}{devicegroup_string}{xml_string}{validators_string}{fixers_string}{limit_string}{extension}'
-    
+
     return output_fname
 
 
@@ -238,8 +239,8 @@ def main():
         else:
             validators = get_policy_validators()
 
-        problems, total_problems, total_checks = run_policy_validators(validators, profilepackage, output_fname)    
-        
+        problems, total_problems, total_checks = run_policy_validators(validators, profilepackage, output_fname)
+
     write_analyzer_output(problems, output_fname, profilepackage, total_checks, parsed_args.output_format)
 
     end_time = time.time()
