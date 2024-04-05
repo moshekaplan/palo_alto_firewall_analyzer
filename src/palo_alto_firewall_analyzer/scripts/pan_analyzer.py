@@ -73,8 +73,7 @@ def run_policy_validators(validators, profilepackage, output_fname):
         total_checks += count_checks
     return problems, total_problems, total_checks
 
-
-def wtrite_analyzer_output_json(problems, fname, profilepackage, sum_total_checks):
+def write_analyzer_output_json(problems, fname, profilepackage, sum_total_checks):
     # build json
     total_problems = 0
     entries = []
@@ -108,6 +107,7 @@ def wtrite_analyzer_output_json(problems, fname, profilepackage, sum_total_check
 
 def write_analyzer_output(problems, fname, profilepackage, sum_total_checks, out_format='text'):
     supported_output_formats = ["text", "json"]
+
     if out_format not in supported_output_formats:
         raise Exception(
             f"Unsupported output format of {out_format}! Output format must be one of {supported_output_formats}")
@@ -128,7 +128,7 @@ def write_analyzer_output(problems, fname, profilepackage, sum_total_checks, out
                     #    fh.write('(none)\n')
                 fh.write('\n')
     elif out_format == 'json':
-        wtrite_analyzer_output_json(problems, fname, profilepackage, sum_total_checks)
+        write_analyzer_output_json(problems, fname, profilepackage, sum_total_checks)
 
 
 def build_output_fname(parsed_args):
@@ -156,13 +156,14 @@ def build_output_fname(parsed_args):
         limit_string = "_limit" + str(parsed_args.limit)
     else:
         limit_string = ""
-
+        
     if parsed_args.output_format == 'json':
         extension = '.json'
     else:
         extension = '.txt'
 
     output_fname = f'pan_analyzer_output_{EXECUTION_START_TIME}{devicegroup_string}{xml_string}{validators_string}{fixers_string}{limit_string}{extension}'
+    
     return output_fname
 
 
@@ -196,6 +197,7 @@ def main():
     parser.add_argument("--debug", help="Write all debug output to pan_validator_debug_YYMMDD_HHMMSS.log", action='store_true')
     parser.add_argument("--limit", help="Limit processing to the first N rules (useful for debugging)", type=int)
     parser.add_argument("--output-format", help="Type File Output, default='text'", default="text", type=str, choices=['text', 'json'])
+
     parsed_args = parser.parse_args()
 
     configure_logging(parsed_args.debug, not parsed_args.quiet)
@@ -235,9 +237,11 @@ def main():
             validators = {validator: get_policy_validators()[validator] for validator in parsed_args.validator}
         else:
             validators = get_policy_validators()
+
         problems, total_problems, total_checks = run_policy_validators(validators, profilepackage, output_fname)    
         
     write_analyzer_output(problems, output_fname, profilepackage, total_checks, parsed_args.output_format)
+
     end_time = time.time()
 
     logger.info(f"Full run took {round(end_time - start_time, 2)} seconds")

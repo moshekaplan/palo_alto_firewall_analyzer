@@ -34,6 +34,7 @@ and will prompt you for credentials and save the retrieved API key to "API_KEY.t
 `pan_analyzer --xml 12345.xml`
 
 * Run all validators on an XML configuration file downloaded with "Export Panorama configuration version" and choose type output file (formats support txt (text) and json (json)):
+
 `pan_analyzer --xml 12345.xml --output-format text`
 `pan_analyzer --xml 12345.xml --output-format json`
 
