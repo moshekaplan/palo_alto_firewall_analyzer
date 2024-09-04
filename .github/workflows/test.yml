@@ -36,12 +36,12 @@ jobs:
         pytest
         python -m pip install -e .
         coverage run -m pytest .
-        coverage json  --include "src/*"
+        coverage json  --include "src/*" -o ${{ matrix.python-version }}_coverage.json
     - name: "Upload coverage data"
       uses: actions/upload-artifact@v4
       with:
         name: covdata
-        path: coverage.json
+        path: ${{ matrix.python-version }}_coverage.json
 
   coverage:
     name: Coverage
