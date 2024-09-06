@@ -56,8 +56,9 @@ class TestSupersedingRules(unittest.TestCase):
         rules = pan_config.get_devicegroup_policy('SecurityPreRules', 'test_dg')
 
         profilepackage = self.create_profilepackage(rules)
-        results = find_superseding_rules(profilepackage)
+        results, count_checks = find_superseding_rules(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(results[0].data[0][2], 'first_rule')
         self.assertEqual(results[0].data[1][2], 'superseding_rule')
 

@@ -56,9 +56,10 @@ class TestUnusedSecurityProfileGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config)
 
         _, _, validator_function = get_policy_validators()['UnusedSecurityProfileGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
 
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 3)
         self.assertEqual(len(results[0].data), 1)
         self.assertEqual(results[0].data[0].get('name'), 'unused_group3')
         self.assertEqual(results[0].device_group, 'shared')

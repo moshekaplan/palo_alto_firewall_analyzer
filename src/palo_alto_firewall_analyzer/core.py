@@ -8,7 +8,6 @@ import os
 import socket
 import typing
 import xml.etree.ElementTree
-
 import xmltodict
 
 from palo_alto_firewall_analyzer.pan_config import PanConfig
@@ -141,7 +140,20 @@ class ProfilePackage:
     rule_limit_enabled: bool
 
 
-BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', 'entry_type'])
+Detail = collections.namedtuple('Detail', ['policy_type', 'policy_name',
+                                           'device_group', 'entry_type',
+                                           'entry_name', 'entry_value',
+                                           'rule_type', 'rule_name',
+                                           'protocol', 'port',
+                                           'allowed_group_profiles',
+                                           'group_profile_setting', 'address',
+                                           'fqdn', 'ip', 'ip_mask', 'loc',
+                                           'mandated_log_profile', 'log_setting',
+                                           'object_entry_name', 'policy_entry_name',
+                                           'shadowing_address_name', 'zone_type',
+                                           'zones', 'dg', 'extra']
+                                )
+BadEntry = collections.namedtuple('BadEntry', ['data', 'text', 'device_group', 'entry_type', 'Detail'])
 
 
 @functools.lru_cache(maxsize=None)
@@ -178,9 +190,33 @@ def cached_fqdn_lookup(domain):
 
 
 @functools.lru_cache(maxsize=None)
-def xml_object_to_dict(xml_obj):
+def xml_object_to_dict1(xml_obj):
     obj_xml_string = xml.etree.ElementTree.tostring(xml_obj)
     obj_dict = xmltodict.parse(obj_xml_string)
+    return obj_dict
+
+
+@functools.lru_cache(maxsize=None)
+def xml_object_to_dict(xml_obj):
+    obj_xml_string = xml.etree.ElementTree.tostring(xml_obj)
+    root = xml.etree.ElementTree.fromstring(obj_xml_string)
+    """List attributes for remove, because the validators not working with attributes, no parsed good"""
+    list_atr_remove = ['loc']
+
+    def remove_loc(elements, atr):
+        if atr in elements.attrib:
+            del elements.attrib[atr]
+        for elem in elements:
+            remove_loc(elem, atr)
+
+    for atr in list_atr_remove:
+        for entry in root:
+            remove_loc(entry, atr)
+
+    xml_atr_remove = xml.etree.ElementTree.tostring(root)
+
+    obj_dict = xmltodict.parse(xml_atr_remove)
+
     return obj_dict
 
 

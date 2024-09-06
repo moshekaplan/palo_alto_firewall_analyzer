@@ -45,8 +45,9 @@ class TestMisleadingServices(unittest.TestCase):
         profilepackage = self.create_profilepackage(services)
 
         _, _, validator_function = get_policy_validators()['MisleadingServices']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 4)
+        self.assertEqual(count_checks, 8)
         self.assertEqual(results[0].data.get('name'), 'invalid-protocol-tcp-123')
         self.assertEqual(results[1].data.get('name'), 'invalid-protocol-udp-1234')
         self.assertEqual(results[2].data.get('name'), 'invalid-port-1233')

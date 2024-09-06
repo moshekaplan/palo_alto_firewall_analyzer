@@ -53,9 +53,10 @@ class TestShadowingObjects(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, dg_services, [], [])
 
         _, _, validator_function = get_policy_validators()['ShadowingServices']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
 
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1].get('name'), 'tcp-dup')
@@ -86,8 +87,9 @@ class TestShadowingObjects(unittest.TestCase):
         profilepackage = self.create_profilepackage([], [], shared_service_groups, dg_service_groups)
 
         _, _, validator_function = get_policy_validators()['ShadowingServiceGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1].get('name'), 'dupgroup1')

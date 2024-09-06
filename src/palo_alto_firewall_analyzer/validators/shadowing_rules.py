@@ -29,6 +29,7 @@ A future enhancement would be to also check IP ranges and subnets, so that
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +189,7 @@ def find_shadowing_rules(profilepackage):
     pan_config = profilepackage.pan_config
 
     badentries = []
-
+    count_checks = 0
     logger.info("*" * 80)
     logger.info("Checking for shadowing rules")
 
@@ -217,7 +218,13 @@ def find_shadowing_rules(profilepackage):
                 shadowing_list += [f"{prior_dg}'s {prior_ruletype} '{prior_rule_name}'"]
             text += ", ".join(shadowing_list)
             logger.info(text)
+            detail={
+                "device_group":device_group,
+                "rule_type":ruletype,
+                "rule_name":rule_name,
+                "extra": shadowing_list
+            }
             badentries.append(
-                BadEntry(data=(shadowed_tuple, prior_tuples), text=text, device_group=device_group, entry_type=None))
-
-    return badentries
+                BadEntry(data=(shadowed_tuple, prior_tuples), text=text, device_group=device_group, entry_type=None,Detail=parsed_details(detail)))
+            count_checks+=1
+    return badentries,count_checks

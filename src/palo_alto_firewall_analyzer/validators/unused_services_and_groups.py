@@ -1,6 +1,7 @@
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -8,11 +9,13 @@ def find_unused_service_like_object(profilepackage, object_type, object_friendly
     device_groups = profilepackage.device_groups
     devicegroup_objects = profilepackage.devicegroup_objects
     pan_config = profilepackage.pan_config
+    
+    count_checks = 0
 
     rule_limit_enabled = profilepackage.rule_limit_enabled
 
     if rule_limit_enabled:
-        return []
+        return [],count_checks
 
     badentries = []
 
@@ -41,24 +44,31 @@ def find_unused_service_like_object(profilepackage, object_type, object_friendly
                             services_in_use.add(service_child_element.text)
 
         unused_services = sorted(set(services.keys()) - services_in_use)
+        count_checks = len(set(services.keys()))
         for unused_service in unused_services:
             text = f"Device Group {device_group}'s {object_friendly_type} {unused_service} is not in use for any Policies or Service Groups"
+            detail={
+                "device_group": device_group,
+                "entry_type": object_type,
+                "entry_name": object_friendly_type,
+                "extra": f"object_friendly_type: {object_friendly_type}, unused_service: {unused_service}, Total Services: {count_checks}, Services in use: {len(services_in_use)}"
+            }
             badentries.append(
-                BadEntry(data=[services[unused_service]], text=text, device_group=device_group, entry_type=object_type))
+                BadEntry(data=[services[unused_service]], text=text, device_group=device_group, entry_type=object_type,Detail=parsed_details(detail)))
 
-    return badentries
+    return badentries,count_checks
 
 
 @register_policy_validator("UnusedServices", "Services objects that aren't in use")
 def find_unused_services(profilepackage):
     object_type = "Services"
     object_friendly_type = "Service"
-    badentries = find_unused_service_like_object(profilepackage, object_type, object_friendly_type)
-    return badentries
+    badentries,count_checks = find_unused_service_like_object(profilepackage, object_type, object_friendly_type)
+    return badentries,count_checks
 
 @register_policy_validator("UnusedServiceGroups", "Service Group objects that aren't in use")
 def find_unused_servicegroups(profilepackage):
     object_type = "ServiceGroups"
     object_friendly_type = "Service Groups"
-    badentries = find_unused_service_like_object(profilepackage, object_type, object_friendly_type)
-    return badentries
+    badentries,count_checks = find_unused_service_like_object(profilepackage, object_type, object_friendly_type)
+    return badentries,count_checks

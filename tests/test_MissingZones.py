@@ -72,8 +72,9 @@ class TestMissingZones(unittest.TestCase):
         profilepackage = self.create_profilepackage(rules, addresses)
         get_firewall_zone.side_effect = ['src_zone', 'dest_zone', "missing_zone"]
         _, _, validator_function = get_policy_validators()['MissingZones']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(results[0].data.get('name'), 'missing_zone_rule')
 
 

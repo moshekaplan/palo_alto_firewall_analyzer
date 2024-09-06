@@ -60,8 +60,9 @@ class TestShadowingAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
+        self.assertEqual(count_checks, 0)
 
     def test_dup_in_shared(self):
         test_xml = """\
@@ -92,8 +93,9 @@ class TestShadowingAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1], 'AddressGroups')
@@ -131,8 +133,9 @@ class TestShadowingAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'test_dg')
         self.assertEqual(results[0].data[0][1], 'AddressGroups')
@@ -179,9 +182,10 @@ class TestShadowingAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
 
         self.assertEqual(len(results), 4)
+        self.assertEqual(count_checks, 4)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'test_dg')
         self.assertEqual(results[0].data[0][1], 'Addresses')
@@ -239,9 +243,10 @@ class TestShadowingAddressesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_addresses, dg_addesses, shared_addressgroups, dg_addessgroups)
 
         _, _, validator_function = get_policy_validators()['ShadowingAddressesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
 
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1], 'AddressGroups')

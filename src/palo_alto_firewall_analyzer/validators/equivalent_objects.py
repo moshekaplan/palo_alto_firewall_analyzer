@@ -7,6 +7,8 @@ import xml.etree.ElementTree
 import xmltodict
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.core import xml_object_to_dict
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +54,7 @@ NORMALIZATION_FUNCTIONS = {'Addresses': normalize_address,
 
 
 @functools.lru_cache(maxsize=None)
-def normalize_object(obj, object_type, ignore_description, ignore_tags):
+def normalize_object(obj, object_type, ignore_description, ignore_tags):    
     """Turn an XML-based object into a
     normalized string representation.
 
@@ -60,8 +62,9 @@ def normalize_object(obj, object_type, ignore_description, ignore_tags):
     converting the object to a dictionary,
     deleting the keys we don't want to look at,
     and then converting the dictionary to a string"""
-    xml_string = xml.etree.ElementTree.tostring(obj)
-    obj_dict = xmltodict.parse(xml_string)
+    #xml_string = xml.etree.ElementTree.tostring(obj)
+    #obj_dict = xmltodict.parse(xml_string)
+    obj_dict = xml_object_to_dict(obj)
 
     # Specifically don't look at the name, or every object would be unique
     del obj_dict['entry']['@name']
@@ -82,14 +85,15 @@ def normalize_object(obj, object_type, ignore_description, ignore_tags):
 def find_equivalent_objects(profilepackage, object_type):
     """
     Generic function for finding all objects in the hierarchy with effectively the same values
-    """
+    """    
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     ignore_description = profilepackage.settings.getboolean("Equivalent objects ignore description", False)
     ignore_tags = profilepackage.settings.getboolean("Equivalent objects ignore tags", False)
-
+    
     badentries = []
+    count_checks = 0
 
     logger.info("*" * 80)
     logger.info(f"Checking for equivalent {object_type} objects")
@@ -126,8 +130,14 @@ def find_equivalent_objects(profilepackage, object_type):
                     equivalency_text = f'Device Group: {dg}, Name: {obj.get("name")}'
                     equivalency_texts.append(equivalency_text)
                 text = f"Device Group {device_group} has the following equivalent {object_type}: {equivalency_texts}"
-                badentries.append(BadEntry(data=entries, text=text, device_group=device_group, entry_type=object_type))
-    return badentries
+                detail={
+                    "device_group":device_group,
+                    "entry_type":object_type,
+                    "extra":f"equivalency_text: {equivalency_text}"
+                }
+                badentries.append(BadEntry(data=entries, text=text, device_group=device_group, entry_type=object_type,Detail=parsed_details(detail)))
+            count_checks+=1
+    return badentries,count_checks
 
 
 @register_policy_validator("EquivalentAddresses", "Addresses objects that are equivalent with each other")

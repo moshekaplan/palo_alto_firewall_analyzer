@@ -54,8 +54,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1], 'Services')
@@ -96,8 +97,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1], 'ServiceGroups')
@@ -137,8 +139,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)        
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
         self.assertEqual(results[0].data[0][1], 'Services')
@@ -170,8 +173,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'test_dg')
         self.assertEqual(results[0].data[0][1], 'Services')
@@ -206,8 +210,9 @@ class TestSimilarServicesAndGroups(unittest.TestCase):
         profilepackage = self.create_profilepackage(shared_services, dg_services, shared_servicegroups, dg_servicegroups)
 
         _, _, validator_function = get_policy_validators()['SimilarServicesAndGroups']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 0)
+        self.assertEqual(count_checks, 2)
 
 
 if __name__ == "__main__":

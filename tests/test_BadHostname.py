@@ -65,8 +65,9 @@ class TestBadHostname(unittest.TestCase):
         profilepackage = self.create_profilepackage(addresses, address_groups, rules, ignored_dns_prefixes)
 
         _, _, validator_function = get_policy_validators()['BadHostname']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)        
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 3)
         self.assertEqual(results[0].data.get('name'), 'invalid_fqdn')
 
 
@@ -103,8 +104,9 @@ class TestBadHostname(unittest.TestCase):
         profilepackage = self.create_profilepackage(addresses, address_groups, rules, ignored_dns_prefixes)
 
         _, _, validator_function = get_policy_validators()['BadHostnameUsage']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks, 8)
         self.assertEqual(results[0].data.get('name'), 'Sample invalid AG')
         self.assertEqual(results[1].data.get('name'), 'test_rule')
 

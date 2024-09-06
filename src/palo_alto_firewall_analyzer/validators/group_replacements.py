@@ -1,6 +1,7 @@
 import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, register_policy_validator
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ def find_redundant_addresses(profilepackage):
     pan_config = profilepackage.pan_config
 
     badentries = []
-
+    count_checks=0
     logger.info("*" * 80)
     logger.info("Checking for redundant rule address members")
 
@@ -61,6 +62,7 @@ def find_redundant_addresses(profilepackage):
                     continue
                 members_to_replace = {}
                 for direction in ('source', 'destination'):
+                    count_checks+=1
                     # Determine which entries are equivalent to Address Groups
                     address_like_members = tuple(sorted([elem.text for elem in rule_entry.findall(f'./{direction}/member')]))
                     if address_like_members in members_to_groupnames:
@@ -74,14 +76,23 @@ def find_redundant_addresses(profilepackage):
                         direction_string = f"{direction} addresses can be replaced with '{groupname}'"
                         direction_strings += [direction_string]
                     text += " and ".join(direction_strings)
-                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_replace), text=text, device_group=device_group, entry_type='Address'))
-    return badentries
+                    detail={
+                        "device_group": device_group,
+                        "entry_type":'Address',
+                        "rule_type":ruletype,
+                        "rule_name":rule_name,
+                        "extra":f"Direction_string: {direction_strings}"
+                    }
+                    badentries.append(BadEntry(data=(ruletype, rule_entry, members_to_replace), text=text, device_group=device_group, entry_type='Address',Detail=parsed_details(detail)))
+    return badentries,count_checks
 
 
 @register_policy_validator("ServicesShouldBeGroups", "Detects rules with Services that can be replaced with Service Groups")
 def find_redundant_members(profilepackage):
     device_groups = profilepackage.device_groups
     pan_config = profilepackage.pan_config
+
+    count_checks = 0
 
     badentries = []
 
@@ -103,6 +114,7 @@ def find_redundant_members(profilepackage):
 
         for ruletype in ('SecurityPreRules', 'SecurityPostRules'):
             for rule_entry in pan_config.get_devicegroup_policy(ruletype, device_group):
+                count_checks+=1
                 # Skip disabled rules:
                 if rule_entry.find("./disabled") is not None and rule_entry.find("./disabled").text == "yes":
                     continue
@@ -114,5 +126,12 @@ def find_redundant_members(profilepackage):
                     groupname = members_to_groupnames[service_members]
                     rule_name = rule_entry.get('name')
                     text = f"Device Group {device_group}'s {ruletype} '{rule_name}' Services can be replaced with ServiceGroup: {groupname}"
-                    badentries.append(BadEntry(data=(ruletype, rule_entry, groupname), text=text, device_group=device_group, entry_type='Address'))
-    return badentries
+                    detail={
+                        "device_group":device_group,
+                        "entry_type":'Address',
+                        "rule_type":ruletype,
+                        "rule_name":rule_name,
+                        "extra":f"groupname: {groupname}"
+                    }
+                    badentries.append(BadEntry(data=(ruletype, rule_entry, groupname), text=text, device_group=device_group, entry_type='Address',Detail=parsed_details(detail)))
+    return badentries, count_checks

@@ -49,7 +49,7 @@ class TestEquivalentObjects(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         profilepackage = self.create_profilepackage('Addresses', pan_config)
         _, _, validator_function = get_policy_validators()['EquivalentAddresses']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -87,7 +87,7 @@ class TestEquivalentObjects(unittest.TestCase):
         pan_config = PanConfig(test_xml)
         profilepackage = self.create_profilepackage('AddressGroups', pan_config)
         _, _, validator_function = get_policy_validators()['EquivalentAddressGroups']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -117,7 +117,7 @@ class TestEquivalentObjects(unittest.TestCase):
         profilepackage = self.create_profilepackage('Services', pan_config)
 
         _, _, validator_function = get_policy_validators()['EquivalentServices']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 2)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')
@@ -151,7 +151,7 @@ class TestEquivalentObjects(unittest.TestCase):
         profilepackage = self.create_profilepackage('ServiceGroups', pan_config)
 
         _, _, validator_function = get_policy_validators()['EquivalentServiceGroups']
-        results = validator_function(profilepackage)
+        results, _ = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0].data), 2)
         self.assertEqual(results[0].data[0][0], 'shared')

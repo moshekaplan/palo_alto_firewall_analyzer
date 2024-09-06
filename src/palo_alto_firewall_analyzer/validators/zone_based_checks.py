@@ -4,6 +4,7 @@ import logging
 
 from palo_alto_firewall_analyzer.core import BadEntry, get_single_ip_from_address, register_policy_validator, xml_object_to_dict
 from palo_alto_firewall_analyzer.pan_helpers import get_firewall_zone
+from palo_alto_firewall_analyzer.scripts.pan_details import parsed_details
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +97,9 @@ def find_missing_zones(profilepackage):
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     api_key = profilepackage.api_key
     enable_many_api = profilepackage.settings.getboolean('Enable validators with many API requests')
-
+    count_checks = 0
     if not enable_many_api:
-        return []
+        return [],count_checks
 
     badentries = []
     logger.info ("*"*80)
@@ -142,6 +143,7 @@ def find_missing_zones(profilepackage):
 
                 # Analyze each rule for missing zones
                 for members, zones, zonetype in [(src_members, src_zones, 'Source'), (dest_members, dest_zones, 'Dest')]:
+                    count_checks+=1
                     # If the rules allow 'any' zone, it'll work (although it's quite ugly)
                     if 'any' in zones:
                         continue
@@ -161,8 +163,17 @@ def find_missing_zones(profilepackage):
                         missing_text = " ".join([missing_template.format(zone=zone, members=sorted(set(calculated_zones_to_members[zone])), zonetype=zonetype) for zone in missing_zones])
                         text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' uses {zonetype} zones {zones}. " + missing_text
                         logger.info (text)
-                        badentries.append(BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype))
-    return badentries
+                        detail={
+                            "device_group": device_group,
+                            "entry_type": ruletype,
+                            "rule_type": ruletype,
+                            "rule_name": rule_name,
+                            "zone_type": zonetype,
+                            "zones": zones,
+                            "extra": f"missing_text: {missing_text}"
+                        }
+                        badentries.append(BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype,Detail=parsed_details(detail)))
+    return badentries,count_checks
 
 @register_policy_validator("ExtraZones", "Rule has an extra Zone!")
 def find_extra_zones(profilepackage):
@@ -173,8 +184,10 @@ def find_extra_zones(profilepackage):
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     enable_many_api = profilepackage.settings.getboolean('Enable validators with many API requests')
 
+    count_checks = 0
+    
     if not enable_many_api:
-        return []
+        return [], count_checks
 
     badentries = []
     logger.info ("*"*80)
@@ -218,6 +231,7 @@ def find_extra_zones(profilepackage):
 
                 # Analyze each rule for extra zones
                 for members, zones, zonetype in [(src_members, src_zones, 'Source'), (dest_members, dest_zones, 'Dest')]:
+                    count_checks+=1
                     # If the rule allows 'any' source address, it's a zone-based rule, not an address-based one
                     if 'any' in members:
                         continue
@@ -243,8 +257,17 @@ def find_extra_zones(profilepackage):
                     if extra_zones:
                         text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' uses {zonetype} zones {zones}. The {zonetype} zones should be {sorted(calculated_zones_to_members)}. The following {zonetype} zones are not needed: {extra_zones}"
                         logger.info (text)
-                        badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype) )
-    return badentries
+                        detail={
+                            "device_group": device_group,
+                            "entry_type": ruletype,
+                            "rule_type": ruletype,
+                            "rule_name": rule_name,
+                            "zone_type": zonetype,
+                            "zones": zones,
+                            "extra": f"calculated_zones_to_members: {sorted(calculated_zones_to_members)}, Extra_zones: {extra_zones}"
+                        }
+                        badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype,Detail=parsed_details(detail)))
+    return badentries, count_checks
 
 @register_policy_validator("ExtraRules", "Rule has a single Source/Dest Zone! Rule is not needed!")
 def find_extra_rules(profilepackage):
@@ -255,8 +278,10 @@ def find_extra_rules(profilepackage):
     device_group_hierarchy_parent = profilepackage.device_group_hierarchy_parent
     enable_many_api = profilepackage.settings.getboolean('Enable validators with many API requests')
 
+    count_checks = 0
+    
     if not enable_many_api:
-        return []
+        return [], count_checks
 
     badentries = []
     logger.info ("*"*80)
@@ -338,6 +363,7 @@ def find_extra_rules(profilepackage):
                 calculated_src_zones = set()
                 for firewall in firewalls:
                     for ip in ips['Source']:
+                        count_checks+=1
                         try:
                             zone = get_firewall_zone(firewall, api_key, ip)
                             calculated_src_zones.add(zone)
@@ -346,6 +372,7 @@ def find_extra_rules(profilepackage):
 
                 calculated_dest_zones = set()
                 for firewall in firewalls:
+                    count_checks+=1
                     for ip in ips['Dest']:
                         try:
                             zone = get_firewall_zone(firewall, api_key, ip)
@@ -355,6 +382,14 @@ def find_extra_rules(profilepackage):
 
                 if len(calculated_src_zones) == 1 and calculated_src_zones == calculated_dest_zones:
                     text = f"Device Group '{device_group}'s {ruletype} '{rule_name}' was calculated to only need the same source and dest zone of '{list(calculated_dest_zones)[0]}'."
-                    logger.info (text)
-                    badentries.append( BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype) )
-    return badentries
+                    logger.info(text)
+                    detail={
+                            "device_group": device_group,
+                            "entry_type": ruletype,
+                            "rule_type": ruletype,
+                            "rule_name": rule_name,
+                            "zone_type": zonetype,                            
+                            "extra": f"calculated_dest_zones_list: {list(calculated_dest_zones)[0]}"
+                        }
+                    badentries.append(BadEntry(data=entry, text=text, device_group=device_group, entry_type=ruletype, Detail=parsed_details(detail)))
+    return badentries,count_checks

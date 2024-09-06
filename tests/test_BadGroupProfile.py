@@ -48,8 +48,9 @@ class TestBadGroupProfile(unittest.TestCase):
         profilepackage = self.create_profilepackage(allowed_group_profile, pan_config)
 
         _, _, validator_function = get_policy_validators()['BadGroupProfile']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)        
         self.assertEqual(len(results), 2)
+        self.assertEqual(count_checks,4)
         self.assertEqual(results[0].data.get('name'), 'missing_gp')
         self.assertEqual(results[1].data.get('name'), 'wrong_gp')
 

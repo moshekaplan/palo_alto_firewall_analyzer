@@ -44,8 +44,9 @@ class TestMisleadingAddresses(unittest.TestCase):
         profilepackage = self.create_profilepackage(addresses)
 
         _, _, validator_function = get_policy_validators()['MisleadingAddresses']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
+        self.assertEqual(count_checks, 6)
         self.assertEqual(results[0].data.get('name'), 'invalid_ip_127.0.0.2')
         self.assertEqual(results[1].data.get('name'), 'invalid_range_128.0.0.1')
         self.assertEqual(results[2].data.get('name'), 'invalid_fqdn_invalid.tld')

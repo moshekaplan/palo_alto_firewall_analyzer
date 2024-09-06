@@ -41,8 +41,9 @@ class TestUnconventionallyNamedServices(unittest.TestCase):
         profilepackage = self.create_profilepackage(pan_config, service_name_format)
 
         _, _, validator_function = get_policy_validators()['UnconventionallyNamedServices']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 3)
+        self.assertEqual(count_checks, 5)
         self.assertEqual(results[0].data[0].get('name'), 'prefix-tcp-1234')
         self.assertEqual(results[0].data[1], 'prefix-tcp-123')
         self.assertEqual(results[1].data[0].get('name'), 'prefix-udp-1234')

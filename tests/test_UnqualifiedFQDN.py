@@ -50,8 +50,9 @@ class TestUnqualifiedFQDN(unittest.TestCase):
         profilepackage = self.create_profilepackage(addresses, ignored_dns_prefixes)
 
         _, _, validator_function = get_policy_validators()['UnqualifiedFQDN']
-        results = validator_function(profilepackage)
+        results, count_checks = validator_function(profilepackage)
         self.assertEqual(len(results), 1)
+        self.assertEqual(count_checks, 3)
         self.assertEqual(results[0].data[0].get('name'), 'missing_fqdn')
         self.assertEqual(results[0].data[1], 'missing.tld')
 
