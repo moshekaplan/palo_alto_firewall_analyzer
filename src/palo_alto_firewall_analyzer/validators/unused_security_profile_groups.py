@@ -34,7 +34,7 @@ def find_unused_security_profile_groups(profilepackage, object_type, object_frie
 
         unused_groups = sorted(set(groups.keys()) - groups_in_use)
         for unused_group in unused_groups:
-            text = f"Device Group {device_group}'s {object_friendly_type} {unused_group} is not used by any Security Policies"
+            text = f"Device Group {device_group}'s {object_friendly_type} '{unused_group}' is not used by any Security Policies"
             badentries.append(
                 BadEntry(data=[groups[unused_group]], text=text, device_group=device_group, entry_type=object_type))
     return badentries
