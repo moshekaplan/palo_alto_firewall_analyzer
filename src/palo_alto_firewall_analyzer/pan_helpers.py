@@ -125,7 +125,9 @@ def get_and_save_API_key(fpath):
     password = getpass.getpass(prompt="Password: ")
     api_key = pan_api.get_API_key(panorama, username, password)
     # Create the output directory if it doesn't exist:
-    os.makedirs(os.path.dirname(fpath), exist_ok=True)
+    dirname = os.path.dirname(fpath)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
     with open(fpath, 'w') as fh:
         fh.write(api_key)
     logger.info(f"Successfully obtained an API key and stored it to {fpath}")
