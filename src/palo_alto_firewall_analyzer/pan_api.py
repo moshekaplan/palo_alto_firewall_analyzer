@@ -241,6 +241,7 @@ SUPPORTED_OBJECT_TYPES = (
     "Applications",
     "ApplicationGroups",
     # "ApplicationFilters",
+    "CustomURLCategories",
     "Services",
     "ServiceGroups",
     # "Tags",
@@ -272,6 +273,29 @@ SUPPORTED_OBJECT_TYPES = (
 )
 
 SUPPORTED_LOCATION_TYPES = ('shared', 'device-group')
+
+
+def get_object(panorama, version, api_key, object_type, device_group):
+    '''Retrieve all objects of a particular type via the REST API'''
+    if object_type not in SUPPORTED_OBJECT_TYPES:
+        raise Exception(f"Invalid object_type '{object_type}' ! object_type must be one of {SUPPORTED_OBJECT_TYPES}")
+
+    # 'shared' is a reserved name by PA and not allowed to be used as a device group name
+    if device_group == 'shared':
+        location_type = 'shared'
+    else:
+        location_type = 'device-group'
+
+    path = f"/restapi/v{version}/Objects/{object_type}"
+    params = {
+        'location': location_type,
+        'output-format': 'json',
+    }
+    if location_type == 'device-group':
+        params['device-group'] = device_group
+
+    response = pan_api(panorama, method="get", path=path, params=params, api_key=api_key)
+    return response.json()
 
 
 def delete_object(panorama, version, api_key, object_type, object_to_delete, device_group):
