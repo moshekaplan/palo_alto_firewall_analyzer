@@ -16,9 +16,9 @@ jobs:
       matrix:
         python-version: ['3.11']
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Prepare requirements file
@@ -31,7 +31,7 @@ jobs:
         python -m pip install cyclonedx-bom
         cyclonedx-py requirements requirements_frozen.txt -o sbom.xml
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sbom.xml
         path: sbom.xml
