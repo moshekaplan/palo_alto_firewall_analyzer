@@ -66,7 +66,7 @@ Consolidate Address objects so there is only one object for each target:
 
 ## Known Issues
 
-The validators for checking zones (ExtaZones, MissingZones, and ExtraRules) all
+The validators for checking zones (ExtraZones, MissingZones, and ExtraRules) all
 require looking up the zones for address objects on the firewall. This requires many API
 requests and can take a very long time. Given that PA recommends limiting the number of
 concurrent API calls to five, and that's shared among the web UI, these calls are not
