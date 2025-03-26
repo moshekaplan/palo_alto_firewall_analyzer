@@ -6,10 +6,19 @@ download the XML configuration file once and retrieve the values from there.
 
 import collections
 import functools
+import ipaddress
 import logging
 import xml.etree.ElementTree
 
+import xmltodict
+
 logger = logging.getLogger(__name__)
+
+@functools.lru_cache(maxsize=None)
+def xml_object_to_dict(xml_obj):
+    obj_xml_string = xml.etree.ElementTree.tostring(xml_obj)
+    obj_dict = xmltodict.parse(obj_xml_string)
+    return obj_dict
 
 
 class PanConfig:
@@ -33,6 +42,7 @@ class PanConfig:
         else:
             self.configroot = xml.etree.ElementTree.fromstring(configdata).find('./result')
 
+
     @functools.lru_cache(maxsize=None)
     def get_device_groups(self):
         '''
@@ -41,6 +51,7 @@ class PanConfig:
         xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"
         device_groups = [elem.get('name') for elem in self.configroot.findall(xpath)]
         return device_groups
+
 
     @functools.lru_cache(maxsize=None)
     def get_device_groups_hierarchy(self):
@@ -71,6 +82,38 @@ class PanConfig:
             device_group_hierarchy_parent[name] = 'shared'
 
         return device_group_hierarchy_children, device_group_hierarchy_parent
+
+
+    def get_device_groups_parents(self):
+        '''
+        Returns a mapping of parent device groups to their children.
+        '''
+        _, device_group_hierarchy_parent = self.get_device_groups_hierarchy()
+        return device_group_hierarchy_parent
+
+
+    def get_device_groups_parents_flatten(self, device_group):
+        '''
+        Given a device group, returns a list of its parents, in order.
+        This is intended to ease iterating over the device groups
+        '''
+        device_group_hierarchy_parent = self.get_device_groups_parents()
+
+        all_dgs = [device_group]
+        current_dg = device_group
+        while current_dg in device_group_hierarchy_parent:
+            current_dg = device_group_hierarchy_parent[current_dg]
+            all_dgs += [current_dg]
+        return all_dgs
+
+
+    def get_device_groups_children(self):
+        '''
+        Returns a mapping of each child device group to its parent.
+        '''
+        device_group_hierarchy_children, _ = self.get_device_groups_hierarchy()
+        return device_group_hierarchy_children
+
 
     SUPPORTED_LOCATION_TYPES = {
         'shared': "./config/shared/",
@@ -103,17 +146,17 @@ class PanConfig:
     SUPPORTED_OBJECT_TYPES = {
         "Addresses": "address/",
         "AddressGroups": "address-group/",
-        # "Regions",
+        "Regions": "region/",
         # "DynamicUserGroups",
         "Applications": "application/",
         "ApplicationGroups": "application-group/",
-        # "ApplicationFilters",
+        "ApplicationFilters": "application-filter/",
         "Services": "service/",
         "ServiceGroups": "service-group/",
         # "Tags",
         # "GlobalProtectHIPObjects",
         # "GlobalProtectHIPProfiles",
-        # "ExternalDynamicLists",
+        "ExternalDynamicLists": "external-list/",
         # "CustomDataPatterns",
         # "CustomSpywareSignatures",
         # "CustomVulnerabilitySignatures",
@@ -138,6 +181,7 @@ class PanConfig:
         # "Schedules",
     }
 
+
     @functools.lru_cache(maxsize=None)
     def get_devicegroup_policy(self, policy_type, device_group):
         '''
@@ -156,6 +200,7 @@ class PanConfig:
         xpath_location_prefix = self.SUPPORTED_LOCATION_TYPES[location_type].format(device_group=device_group)
         xpath = xpath_location_prefix + self.SUPPORTED_POLICY_TYPES[policy_type]
         return self.configroot.findall(xpath)
+
 
     @functools.lru_cache(maxsize=None)
     def get_devicegroup_object(self, object_type, device_group):
@@ -176,6 +221,16 @@ class PanConfig:
         xpath = xpath_location_prefix + self.SUPPORTED_OBJECT_TYPES[object_type]
         return self.configroot.findall(xpath)
 
+
+    def get_devicegroup_object_dict(self, object_type, device_group):
+        '''
+        Returns all of a specified object type for the specified device group, as dictionaries
+        '''
+        objects = self.get_devicegroup_object(object_type, device_group)
+        dict_objects = [xml_object_to_dict(object) for object in objects]
+        return dict_objects
+
+
     def get_devicegroup_all_objects(self, object_type, device_group):
         '''
         Returns all objects available to a device group including those from parent objects
@@ -190,6 +245,92 @@ class PanConfig:
             all_objects += self.get_devicegroup_object(object_type, current_dg)
         return all_objects
 
+
+    @functools.lru_cache(maxsize=None)
+    def resolve_address_name(self, device_group, name):
+        '''
+        Determines which type of object an address object name refers to
+        and returns the object device group, type, and value.
+
+        In a Security Policy, an entry under 'Source Address' can be one of the following:
+        1) Address
+        2) Address Group
+        3) Region
+        4) External Dynamic List
+        5) Literal IP
+
+        These can be from the current device group or any parent device group.
+        Fortunately, PAN firewalls have a single namespace per hierarchy level.
+
+        As a general rule, the object at the lowest level has precedence, unless it
+        is explicitly overridden. That is not yet supported.
+        '''
+        object_types = ["Addresses", "AddressGroups", "Regions", "ExternalDynamicLists"]
+        device_groups = self.get_device_groups_parents_flatten(device_group)
+        for dg in device_groups:
+            for object_type in object_types:
+                objects = self.get_devicegroup_object_dict(object_type, dg)
+                for object in objects:
+                    if object['entry']['@name'] == name:
+                        return dg, object_type, object
+
+        # Last shot: Is it a literal IP?
+        try:
+            ipaddress.ip_network(name, strict=False)
+            return '', 'literal_IP', name
+        except:
+            raise Exception("Unknown item!")
+
+
+    @functools.lru_cache(maxsize=None)
+    def resolve_app_name(self, device_group, name):
+        '''
+        Determines which type of object an application object name refers to
+        and returns the object device group, type, and value.
+
+        In a Security Policy, an entry under 'Application' can be one of the following:
+        1) Application
+        2) Application Group
+        3) Application Filter
+
+        These can be from the current device group or any parent device group.
+        Fortunately, PAN firewalls have a single namespace per hierarchy level.
+        '''
+        object_types = ["Applications", "ApplicationGroups", "ApplicationFilters"]
+        device_groups = self.get_device_groups_parents_flatten(device_group)
+        for dg in device_groups:
+            for object_type in object_types:
+                objects = self.get_devicegroup_object_dict(object_type, dg)
+                for object in objects:
+                    if object['entry']['@name'] == name:
+                        return dg, object_type, object
+
+        raise Exception("Unknown item!")
+
+
+    @functools.lru_cache(maxsize=None)
+    def resolve_service_name(self, device_group, name):
+        '''
+        Determines which type of object an service object name refers to
+        and returns the object device group, type, and value.
+
+        In a Security Policy, an entry under 'Service' can be one of the following:
+        1) Service
+        2) Service Group
+
+        These can be from the current device group or any parent device group.
+        Fortunately, PAN firewalls have a single namespace per hierarchy level.
+        '''
+        object_types = ["Services", "ServiceGroups"]
+        device_groups = self.get_device_groups_parents_flatten(device_group)
+        for dg in device_groups:
+            for object_type in object_types:
+                objects = self.get_devicegroup_object_dict(object_type, dg)
+                for object in objects:
+                    if object['entry']['@name'] == name:
+                        return dg, object_type, object
+
+        raise Exception("Unknown item!")
 
     @functools.lru_cache(maxsize=None)
     def get_major_version(self):
