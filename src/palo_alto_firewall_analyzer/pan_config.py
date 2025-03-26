@@ -18,7 +18,7 @@ class PanConfig:
     with the 'show config' command.
     'show config' is used instead of `export configuration` so that
     the xpath's used for retrieving values from the config
-     will be the same as those used with the XML API.
+    will be the same as those used with the XML API.
     """
 
     def __init__(self, configdata: str, from_file=False):
@@ -35,12 +35,20 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_device_groups(self):
+        '''
+        Returns the list of device groups present in the configuration file
+        '''
         xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"
         device_groups = [elem.get('name') for elem in self.configroot.findall(xpath)]
         return device_groups
 
     @functools.lru_cache(maxsize=None)
     def get_device_groups_hierarchy(self):
+        '''
+        Returns a tuple of two dict's.
+        The first is the mapping of parent device groups to their children.
+        The second is the mapping of each child device group to its parent.
+        '''
         xpath = "./config/readonly/devices/entry[@name='localhost.localdomain']/device-group/entry"
 
         device_group_hierarchy_children = collections.defaultdict(list)
@@ -132,6 +140,9 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_devicegroup_policy(self, policy_type, device_group):
+        '''
+        Returns all of a specified policy type for the specified device group
+        '''
         if policy_type not in self.SUPPORTED_POLICY_TYPES:
             raise Exception(
                 f"Invalid policy_type '{policy_type}' ! policy_type must be one of {self.SUPPORTED_POLICY_TYPES.keys()}")
@@ -148,7 +159,9 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_devicegroup_object(self, object_type, device_group):
-        '''Returns the objects in a specific device group'''
+        '''
+        Returns all of a specified object type for the specified device group
+        '''
         if object_type not in self.SUPPORTED_OBJECT_TYPES:
             raise Exception(
                 f"Invalid object_type '{object_type}' ! object_type must be one of {self.SUPPORTED_OBJECT_TYPES.keys()}")
@@ -164,7 +177,10 @@ class PanConfig:
         return self.configroot.findall(xpath)
 
     def get_devicegroup_all_objects(self, object_type, device_group):
-        '''Returns all objects available to a device group including those from parent objects'''
+        '''
+        Returns all objects available to a device group including those from parent objects
+        Note that this function can potentially return duplicate objects!
+        '''
         _, device_group_hierarchy_parent = self.get_device_groups_hierarchy()
         all_objects = []
         current_dg = device_group
@@ -174,9 +190,12 @@ class PanConfig:
             all_objects += self.get_devicegroup_object(object_type, current_dg)
         return all_objects
 
+
     @functools.lru_cache(maxsize=None)
     def get_major_version(self):
-        # Returns in the form '10.0.0'
+        ''''
+        Returns the version number in the form '10.0.0'
+        '''
         full_version = self.configroot.find('.config').get('version')
         # API uses the form: '10.0'
         major_version = full_version.rsplit('.', 1)[0]
@@ -184,7 +203,9 @@ class PanConfig:
 
     @functools.lru_cache(maxsize=None)
     def get_managed_serials(self):
-        # Returns a list of serial numbers of managed devices
+        '''
+        Returns a list of serial numbers of managed devices
+        '''
         serial_elements = self.configroot.findall('./config/mgt-config/devices/entry')
         serials = [serial_element.get('name') for serial_element in serial_elements]
         return serials
