@@ -141,7 +141,7 @@ def consolidate_service_like_objects(profilepackage, object_type, object_friendl
                 replacements_made[member_to_replace] = service_to_replacement[member_to_replace]
                 object_policy_dict['service'] = service_to_replacement[member_to_replace]
             # If it's a policy with only one member, it'll be parsed as a string, not a list
-            elif isinstance(object_policy_dict['service']['member'], str):
+            elif isinstance(object_policy_dict['service']['member'], str) and object_policy_dict['service']['member'] in service_to_replacement:
                 member_to_replace = object_policy_dict['service']['member']
                 replacements_made[member_to_replace] = service_to_replacement[member_to_replace]
                 object_policy_dict['service']['member'] = service_to_replacement[member_to_replace]

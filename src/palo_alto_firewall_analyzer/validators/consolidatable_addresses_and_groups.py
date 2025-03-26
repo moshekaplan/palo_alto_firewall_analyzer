@@ -170,8 +170,13 @@ def replace_policy_contents(policies_needing_replacement, address_to_replacement
                     object_policy_dict[translation]['translated-address'], replacements_made = replace_member_contents(object_policy_dict[translation]['translated-address'], address_to_replacement, replacements_made)
                 if object_policy_dict[translation].get('dynamic-ip-and-port', {}).get('translated-address', {}).get('member'):
                     object_policy_dict[translation]['dynamic-ip-and-port']['translated-address']['member'], replacements_made = replace_member_contents(object_policy_dict[translation]['dynamic-ip-and-port']['translated-address']['member'], address_to_replacement, replacements_made)
-                if object_policy_dict[translation].get('static-ip', {}).get('translated-address', {}).get('member'):
+                # when static-ip --> translated-address doesn't have member object, and IP comes directly as string
+                if isinstance(object_policy_dict[translation].get('static-ip', {}).get('translated-address', {}),str):
+                    translatedAddress = object_policy_dict[translation]['static-ip']['translated-address']
+                    object_policy_dict[translation]['static-ip']['translated-address']={'member':translatedAddress}
                     object_policy_dict[translation]['static-ip']['translated-address']['member'], replacements_made = replace_member_contents(object_policy_dict[translation]['static-ip']['translated-address']['member'], address_to_replacement, replacements_made)
+                elif object_policy_dict[translation].get('static-ip', {}).get('translated-address', {}).get('member'):
+                    object_policy_dict[translation]['static-ip']['translated-address']['member'], replacements_made = replace_member_contents(object_policy_dict[translation]['static-ip']['translated-address']['member'], address_to_replacement, replacements_made)                
         text = f"Replace the following Address members in {policy_dg}'s {policy_type} {policy_entry.get('name')}: {sorted([k + ' with ' + v for k, v in replacements_made.items()])}"
         badentries.append(BadEntry(data=[policy_entry, object_policy_dict], text=text, device_group=policy_dg, entry_type=policy_type))
     return badentries
