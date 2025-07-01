@@ -1,6 +1,6 @@
 [project]
 name = "pan_analyzer"
-version = "0.0.3.12"
+version = "0.0.3.13"
 authors = [
   { name="Moshe Kaplan", email="me@moshekaplan.com" },
 ]
